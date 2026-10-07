@@ -3,7 +3,7 @@
 **Version:** 1.0  
 **Stack:** MERN (MongoDB + Express.js + React + Node.js) + Vite + TailwindCSS + Stitch UI  
 **Strategy:** Feature-by-Feature Incremental Build with User Approval  
-**Last Updated:** October 6, 2026  
+**Last Updated:** October 7, 2026  
 
 ---
 
@@ -20,8 +20,8 @@
 | **MOD-01** | **Authentication & User Account Management** | ✅ **Completed** | ✅ **Approved & Executed** | User Signup, Login, JWT Access/Refresh tokens, Password Reset OTP, User Profiles, Auth Context & UI Pages |
 | **STITCH-UI** | **Stitch Design System & Page Implementations** | ✅ **Completed** | ✅ **Fetched from Stitch** | Integrated Stitch Nocturne Opulence design system: Home Page (`/`), Sign In (`/signin`), Sign Up (`/signup`), Dashboard (`/dashboard`) |
 | **MOD-02** | **Wedding Setup & Partner Management** | ✅ **Completed** | ✅ **Approved & Executed** | Create Wedding, Partner Invitation code system, Switch active wedding context, Role-based membership |
-| **MOD-03** | **Organizer & Permission Management** | ⏳ **Next Up** | ❓ **Awaiting Approval** | Invite Organizers, Granular Module Permissions (View/Create/Edit/Delete per feature), Access Revocation |
-| **MOD-04** | **Multiple Events Management** | ⏸️ Not Started | ⏸️ Pending MOD-03 | Event CRUD (Haldi, Mehendi, Sangeet, Wedding, Reception, Custom), Schedules, Maps & Location metadata |
+| **MOD-03** | **Organizer & Permission Management** | ✅ **Completed** | ✅ **Approved & Executed** | Invite Organizers, Granular Module Permissions (8 module toggles), Access Revocation, Roster Widget, 1-Click WhatsApp/Email/Link Sharing |
+| **MOD-04** | **Multiple Events Management** | ⏳ **Next Up** | ❓ **Awaiting Approval** | Event CRUD (Haldi, Mehendi, Sangeet, Wedding, Reception, Custom), Schedules, Maps & Location metadata |
 | **MOD-05** | **Guest List & Digital Invitations** | ⏸️ Not Started | ⏸️ Pending MOD-04 | Guest CRUD, Grouping, Event invitations, Customizable Digital Invitation Templates, WhatsApp / Link sharing |
 | **MOD-06** | **Accountless Guest RSVP & Portal** | ⏸️ Not Started | ⏸️ Pending MOD-05 | Public Tokenized RSVP Link, Multi-attendee count, Food preference, RSVP history & update portal |
 | **MOD-07** | **Task Planner & Assignment** | ⏸️ Not Started | ⏸️ Pending MOD-06 | Task creation, Assignee management (Couple/Organizers), Priorities, Deadlines, Status workflow (Pending/In Progress/Completed) |
@@ -33,12 +33,24 @@
 
 ---
 
-## 🎯 Next Proposed Feature: MOD-03 (Organizer & Permission Management)
-Once approved, **MOD-03** will implement:
-1. **Organizer Invitation Flow**:
-   - `POST /api/v1/weddings/:id/invite-organizer` (Invite family members or professional planners with specific module flags)
-   - `GET /api/v1/weddings/:id/organizers` (List all active organizers and their permissions)
-   - `PUT /api/v1/weddings/:id/organizers/:organizerId/permissions` (Update granular module access e.g., canManageEvents, canManageTasks, canManageVendors, etc.)
-   - `DELETE /api/v1/weddings/:id/organizers/:organizerId` (Revoke organizer access while preserving historical work)
-2. **Frontend Organizer Management Modal (`InviteOrganizerModal.jsx`)**:
-   - Permission toggle switches for Events, Guests, Invitations, Tasks, Vendors, Budget, Gallery, and Website.
+## 🎨 Stitch MCP Screen Integrated (MOD-03)
+- **Screen ID:** `e9ad3d3d2a0641b1a4df7aab8f5f8304` (`MakeMyMarriage - Organizer Roster & Granular Permissions Hub`)
+- **Components Built**:
+  - [`organizerController.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/controllers/organizerController.js): Invite, List, Update Permissions, Revoke endpoints.
+  - [`InviteOrganizerModal.jsx`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/features/organizers/InviteOrganizerModal.jsx): 8 Granular Module Permission Switches (`Events`, `Guests`, `Invitations`, `Tasks`, `Vendors`, `Budget`, `Gallery`, `Website`) + 3 Quick Presets (*Lead Planner*, *Family Coord*, *Full Access*) + 1-Click WhatsApp/Email/Copy Link sharing.
+  - [`OrganizersListWidget.jsx`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/features/organizers/OrganizersListWidget.jsx): Roster grid with role & permission status chips.
+  - [`test_organizer.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/test_organizer.js): Automated backend CRUD endpoint verification script.
+
+---
+
+## 🎯 Next Proposed Feature: MOD-04 (Multiple Events Management)
+Once approved by you, **MOD-04** will implement:
+1. **Event Schema (`models/Event.js`)**: Ceremony name (Haldi, Mehendi, Sangeet, Wedding, Reception, Custom), date, start/end time, venue name, address, Google Maps link, dress code, description, YouTube Live URL.
+2. **Backend Event APIs (`routes/eventRoutes.js`)**:
+   - `POST /api/v1/weddings/:id/events` (Create ceremony event)
+   - `GET /api/v1/weddings/:id/events` (List all scheduled ceremonies for a wedding)
+   - `PUT /api/v1/weddings/:id/events/:eventId` (Update event timeline/location)
+   - `DELETE /api/v1/weddings/:id/events/:eventId` (Delete event)
+3. **Frontend Event Management UI (`src/features/events/`)**:
+   - `EventManagementModal.jsx` for creating & editing ceremonies.
+   - Master Timeline Cards with live map pins & dress code tags.

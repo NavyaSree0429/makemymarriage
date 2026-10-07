@@ -7,6 +7,8 @@ import UserProfileCard from '../features/auth/UserProfileCard';
 import CreateWeddingModal from '../features/wedding/CreateWeddingModal';
 import InvitePartnerModal from '../features/wedding/InvitePartnerModal';
 import AcceptPartnerInviteModal from '../features/wedding/AcceptPartnerInviteModal';
+import OrganizersListWidget from '../features/organizers/OrganizersListWidget';
+import InviteOrganizerModal from '../features/organizers/InviteOrganizerModal';
 
 import {
   Heart, Calendar, Users, Shield, CheckCircle, Gift, MapPin, Video,
@@ -23,6 +25,16 @@ export default function DashboardPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showAcceptModal, setShowAcceptModal] = useState(false);
+
+  // MOD-03 Organizer Modal Top-Level States
+  const [showOrganizerModal, setShowOrganizerModal] = useState(false);
+  const [selectedOrganizerMembership, setSelectedOrganizerMembership] = useState(null);
+  const [organizerRefreshKey, setOrganizerRefreshKey] = useState(0);
+
+  const handleOpenOrganizerModal = (membership = null) => {
+    setSelectedOrganizerMembership(membership);
+    setShowOrganizerModal(true);
+  };
 
   const handleCopyLink = () => {
     if (activeWedding?.wedding?.slug) {
@@ -235,59 +247,53 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Multi-Event Master Timeline Strip */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-serif text-xl font-bold flex items-center space-x-2">
-              <Calendar className="w-5 h-5 text-rose-400" />
-              <span>Multi-Event Ceremony Master Timeline</span>
-            </h2>
+        {/* 2-Column Details Layout: Tasks & Organizers List Widget */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left Column: Tasks */}
+          <div className="lg:col-span-7 space-y-6">
+            <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800 rounded-3xl p-6 space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 className="font-semibold text-slate-100 text-base flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 text-amber-400" />
+                  <span>Pending Tasks List</span>
+                </h3>
+                <span className="text-xs text-amber-400 font-semibold">8 Pending</span>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <input type="checkbox" className="rounded accent-rose-500" />
+                    <div>
+                      <p className="font-semibold text-slate-200">Finalize Catering Menu & Food Options</p>
+                      <span className="text-[10px] text-slate-400">Assigned to: Anita (Organizer) • Due in 2 days</span>
+                    </div>
+                  </div>
+                  <span className="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded text-[10px]">High Priority</span>
+                </div>
+
+                <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <input type="checkbox" className="rounded accent-rose-500" />
+                    <div>
+                      <p className="font-semibold text-slate-200">Send Sangeet Choreography Practice Video</p>
+                      <span className="text-[10px] text-slate-400">Assigned to: Priya (Partner) • Due in 5 days</span>
+                    </div>
+                  </div>
+                  <span className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded text-[10px]">Medium Priority</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-slate-900/40 p-5 rounded-2xl border border-slate-800 space-y-3 hover:border-rose-500/30 transition">
-              <div className="flex items-center justify-between text-xs">
-                <span className="bg-rose-500/10 text-rose-300 px-2.5 py-0.5 rounded-full font-semibold">Event 1</span>
-                <span className="text-slate-400">Nov 12 • 10:00 AM</span>
-              </div>
-              <div>
-                <h4 className="font-semibold text-slate-100 text-sm">Engagement & Haldi</h4>
-                <p className="text-xs text-slate-400">Royal Lawn • 120 Guests</p>
-              </div>
-            </div>
-
-            <div className="bg-slate-900/40 p-5 rounded-2xl border border-slate-800 space-y-3 hover:border-amber-500/30 transition">
-              <div className="flex items-center justify-between text-xs">
-                <span className="bg-amber-500/10 text-amber-300 px-2.5 py-0.5 rounded-full font-semibold">Event 2</span>
-                <span className="text-slate-400">Nov 13 • 07:00 PM</span>
-              </div>
-              <div>
-                <h4 className="font-semibold text-slate-100 text-sm">Sangeet Night</h4>
-                <p className="text-xs text-slate-400">Moonlight Lawn • 300 Guests</p>
-              </div>
-            </div>
-
-            <div className="bg-slate-900/40 p-5 rounded-2xl border border-slate-800 space-y-3 hover:border-emerald-500/30 transition">
-              <div className="flex items-center justify-between text-xs">
-                <span className="bg-emerald-500/10 text-emerald-300 px-2.5 py-0.5 rounded-full font-semibold">Event 3</span>
-                <span className="text-slate-400">Nov 14 • 09:00 AM</span>
-              </div>
-              <div>
-                <h4 className="font-semibold text-slate-100 text-sm">Traditional Pheras</h4>
-                <p className="text-xs text-slate-400">Main Mandap • 450 Guests</p>
-              </div>
-            </div>
-
-            <div className="bg-slate-900/40 p-5 rounded-2xl border border-slate-800 space-y-3 hover:border-slate-700 transition">
-              <div className="flex items-center justify-between text-xs">
-                <span className="bg-slate-800 text-slate-300 px-2.5 py-0.5 rounded-full font-semibold">Event 4</span>
-                <span className="text-slate-400">Nov 15 • 08:00 PM</span>
-              </div>
-              <div>
-                <h4 className="font-semibold text-slate-100 text-sm">Grand Reception</h4>
-                <p className="text-xs text-slate-400">Imperial Ballroom • 450 Guests</p>
-              </div>
-            </div>
+          {/* Right Column: MOD-03 Organizers & Granular Permissions Hub */}
+          <div className="lg:col-span-5 space-y-6">
+            <OrganizersListWidget
+              weddingId={weddingObj?._id}
+              canManage={role === 'OWNER' || role === 'PARTNER'}
+              onOpenInviteModal={handleOpenOrganizerModal}
+              refreshTrigger={organizerRefreshKey}
+            />
           </div>
         </div>
       </main>
@@ -307,6 +313,14 @@ export default function DashboardPage() {
       <AcceptPartnerInviteModal
         isOpen={showAcceptModal}
         onClose={() => setShowAcceptModal(false)}
+      />
+
+      <InviteOrganizerModal
+        isOpen={showOrganizerModal}
+        onClose={() => setShowOrganizerModal(false)}
+        weddingId={weddingObj?._id}
+        existingMembership={selectedOrganizerMembership}
+        onRefresh={() => setOrganizerRefreshKey((k) => k + 1)}
       />
     </div>
   );

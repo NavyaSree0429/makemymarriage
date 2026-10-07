@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useWedding } from '../../context/WeddingContext';
-import { Sparkles, X, Copy, Check, ShieldCheck, Heart } from 'lucide-react';
+import { Sparkles, X, Copy, Check, ShieldCheck, Heart, Share2, Send } from 'lucide-react';
 
 export default function InvitePartnerModal({ isOpen, onClose, weddingId }) {
   const { invitePartner } = useWedding();
@@ -24,6 +24,10 @@ export default function InvitePartnerModal({ isOpen, onClose, weddingId }) {
     }
   };
 
+  const getPartnerInviteText = () => {
+    return `Hi darling! Here is your Partner Invitation Code to join our wedding workspace on MakeMyMarriage: ${inviteData?.inviteCode}\n\nJoin workspace here: http://localhost:5173/dashboard`;
+  };
+
   const handleCopy = () => {
     if (inviteData?.inviteCode) {
       navigator.clipboard.writeText(inviteData.inviteCode);
@@ -32,9 +36,20 @@ export default function InvitePartnerModal({ isOpen, onClose, weddingId }) {
     }
   };
 
+  const handleWhatsAppShare = () => {
+    const text = encodeURIComponent(getPartnerInviteText());
+    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+  };
+
+  const handleEmailShare = () => {
+    const subject = encodeURIComponent('Join Our Wedding Workspace - MakeMyMarriage');
+    const body = encodeURIComponent(getPartnerInviteText());
+    window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl shadow-rose-950/30 overflow-hidden">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
+      <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl shadow-rose-950/40 overflow-hidden">
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -65,7 +80,7 @@ export default function InvitePartnerModal({ isOpen, onClose, weddingId }) {
 
         {!inviteData ? (
           <div className="text-center py-4 space-y-4">
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-400 leading-relaxed">
               Your partner will be able to manage all events, RSVPs, tasks, vendors, and photo galleries together with you.
             </p>
             <button
@@ -77,13 +92,34 @@ export default function InvitePartnerModal({ isOpen, onClose, weddingId }) {
             </button>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-fadeIn">
             <div className="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 text-center space-y-2">
-              <span className="text-[10px] font-semibold text-amber-300 uppercase tracking-widest">Partner Invite Code</span>
-              <div className="font-mono text-2xl font-bold text-rose-300 tracking-wider">
+              <span className="text-[10px] font-semibold text-amber-300 uppercase tracking-widest block">Partner Invite Code</span>
+              <div className="font-mono text-3xl font-bold text-rose-300 tracking-widest selection:bg-rose-500 selection:text-white">
                 {inviteData.inviteCode}
               </div>
-              <p className="text-[10px] text-slate-500">Valid for 7 days</p>
+              <p className="text-[10px] text-slate-400">Tell your partner to click <strong>"Join with Code"</strong> on their dashboard.</p>
+            </div>
+
+            {/* Instant Direct Share Actions */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={handleWhatsAppShare}
+                className="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center justify-center space-x-1.5 transition shadow-md"
+              >
+                <Share2 className="w-4 h-4" />
+                <span>WhatsApp</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleEmailShare}
+                className="py-2.5 px-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold flex items-center justify-center space-x-1.5 transition shadow-md"
+              >
+                <Send className="w-4 h-4" />
+                <span>Email</span>
+              </button>
             </div>
 
             <button
@@ -91,7 +127,7 @@ export default function InvitePartnerModal({ isOpen, onClose, weddingId }) {
               className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs flex items-center justify-center space-x-2 transition border border-slate-700"
             >
               {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-amber-400" />}
-              <span>{copied ? 'Code Copied to Clipboard!' : 'Copy Invitation Code'}</span>
+              <span>{copied ? 'Code Copied to Clipboard!' : 'Copy Partner Invitation Code'}</span>
             </button>
           </div>
         )}

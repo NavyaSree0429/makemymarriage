@@ -1,0 +1,31 @@
+# Node modules
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Environment files
+.env
+.env.local
+backend/.env
+
+# Build outputs
+dist/
+build/
+
+# Temp & extracted helper files
+*.zip
+extract.js
+read_text.js
+MakeMyMarriage_API_Design_Document_v1/
+MakeMyMarriage_Database_Design_Document_v1/
+MakeMyMarriage_PRD_v1/
+MakeMyMarriage_System_Architecture_Document_v1/
+backend/test_auth.js
+backend/test_wedding.js
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log

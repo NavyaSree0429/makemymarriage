@@ -1,0 +1,16 @@
+{
+  "name": "makemymarriage-monorepo",
+  "version": "1.0.0",
+  "description": "MakeMyMarriage Centralized Wedding Management Platform Monorepo",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "start:backend": "npm --prefix backend start",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build"
+  }
+}

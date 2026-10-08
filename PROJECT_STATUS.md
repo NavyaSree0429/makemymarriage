@@ -3,7 +3,7 @@
 **Version:** 1.0  
 **Stack:** MERN (MongoDB + Express.js + React + Node.js) + Vite + TailwindCSS + Stitch UI  
 **Strategy:** Feature-by-Feature Incremental Build with User Approval  
-**Last Updated:** October 7, 2026  
+**Last Updated:** October 8, 2026  
 
 ---
 
@@ -21,8 +21,8 @@
 | **STITCH-UI** | **Stitch Design System & Page Implementations** | ✅ **Completed** | ✅ **Fetched from Stitch** | Integrated Stitch Nocturne Opulence design system: Home Page (`/`), Sign In (`/signin`), Sign Up (`/signup`), Dashboard (`/dashboard`) |
 | **MOD-02** | **Wedding Setup & Partner Management** | ✅ **Completed** | ✅ **Approved & Executed** | Create Wedding, Partner Invitation code system, Switch active wedding context, Role-based membership |
 | **MOD-03** | **Organizer & Permission Management** | ✅ **Completed** | ✅ **Approved & Executed** | Invite Organizers, Granular Module Permissions (8 module toggles), Access Revocation, Roster Widget, 1-Click WhatsApp/Email/Link Sharing |
-| **MOD-04** | **Multiple Events Management** | ⏳ **Next Up** | ❓ **Awaiting Approval** | Event CRUD (Haldi, Mehendi, Sangeet, Wedding, Reception, Custom), Schedules, Maps & Location metadata |
-| **MOD-05** | **Guest List & Digital Invitations** | ⏸️ Not Started | ⏸️ Pending MOD-04 | Guest CRUD, Grouping, Event invitations, Customizable Digital Invitation Templates, WhatsApp / Link sharing |
+| **MOD-04** | **Multiple Events Management** | ✅ **Completed** | ✅ **Approved & Executed** | Event CRUD (Haldi, Mehendi, Sangeet, Wedding, Reception, Custom), Schedules, Google Maps links, Dress Codes, Virtual Live Streams, Edit Ceremony Modal |
+| **MOD-05** | **Guest List & Digital Invitations** | ⏳ **Next Up** | ❓ **Awaiting Approval** | Guest CRUD, Grouping, Event invitations, Customizable Digital Invitation Templates, WhatsApp / Link sharing |
 | **MOD-06** | **Accountless Guest RSVP & Portal** | ⏸️ Not Started | ⏸️ Pending MOD-05 | Public Tokenized RSVP Link, Multi-attendee count, Food preference, RSVP history & update portal |
 | **MOD-07** | **Task Planner & Assignment** | ⏸️ Not Started | ⏸️ Pending MOD-06 | Task creation, Assignee management (Couple/Organizers), Priorities, Deadlines, Status workflow (Pending/In Progress/Completed) |
 | **MOD-08** | **Vendor & Budget Tracking** | ⏸️ Not Started | ⏸️ Pending MOD-07 | Vendor directory by category, Planned vs. Spent Budget tracker, Permission-controlled financial view |
@@ -33,24 +33,25 @@
 
 ---
 
-## 🎨 Stitch MCP Screen Integrated (MOD-03)
-- **Screen ID:** `e9ad3d3d2a0641b1a4df7aab8f5f8304` (`MakeMyMarriage - Organizer Roster & Granular Permissions Hub`)
+## 🎨 Stitch MCP Screen Integrated (MOD-04)
+- **Screen ID:** `9f6049c70fef4835b2aded21ae41df57` (`MakeMyMarriage - Ceremonies & Itinerary Master Hub`)
 - **Components Built**:
-  - [`organizerController.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/controllers/organizerController.js): Invite, List, Update Permissions, Revoke endpoints.
-  - [`InviteOrganizerModal.jsx`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/features/organizers/InviteOrganizerModal.jsx): 8 Granular Module Permission Switches (`Events`, `Guests`, `Invitations`, `Tasks`, `Vendors`, `Budget`, `Gallery`, `Website`) + 3 Quick Presets (*Lead Planner*, *Family Coord*, *Full Access*) + 1-Click WhatsApp/Email/Copy Link sharing.
-  - [`OrganizersListWidget.jsx`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/features/organizers/OrganizersListWidget.jsx): Roster grid with role & permission status chips.
-  - [`test_organizer.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/test_organizer.js): Automated backend CRUD endpoint verification script.
+  - [`Event.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/models/Event.js): Ceremony Data model with location metadata & live stream flags.
+  - [`eventController.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/controllers/eventController.js): Full Event CRUD endpoints (`POST`, `GET`, `PUT`, `DELETE`).
+  - [`eventService.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/services/eventService.js): Frontend API service.
+  - [`EventManagementModal.jsx`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/features/events/EventManagementModal.jsx): Modal with function presets, date/time pickers, Google Maps link, dress code tags, live stream embed URL, and pre-filled ceremony editing.
+  - [`EventTimelineWidget.jsx`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/features/events/EventTimelineWidget.jsx): Master Itinerary Timeline widget with category filters, illuminated vertical hairline guide, Google Maps button, dress code badges, and prominent ✏️ Edit Ceremony controls.
+  - [`test_event.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/test_event.js): Automated backend CRUD test suite.
 
 ---
 
-## 🎯 Next Proposed Feature: MOD-04 (Multiple Events Management)
-Once approved by you, **MOD-04** will implement:
-1. **Event Schema (`models/Event.js`)**: Ceremony name (Haldi, Mehendi, Sangeet, Wedding, Reception, Custom), date, start/end time, venue name, address, Google Maps link, dress code, description, YouTube Live URL.
-2. **Backend Event APIs (`routes/eventRoutes.js`)**:
-   - `POST /api/v1/weddings/:id/events` (Create ceremony event)
-   - `GET /api/v1/weddings/:id/events` (List all scheduled ceremonies for a wedding)
-   - `PUT /api/v1/weddings/:id/events/:eventId` (Update event timeline/location)
-   - `DELETE /api/v1/weddings/:id/events/:eventId` (Delete event)
-3. **Frontend Event Management UI (`src/features/events/`)**:
-   - `EventManagementModal.jsx` for creating & editing ceremonies.
-   - Master Timeline Cards with live map pins & dress code tags.
+## 🎯 Next Proposed Feature: MOD-05 (Guest List & Digital Invitations)
+Once approved by you, **MOD-05** will implement:
+1. **Guest Schema (`models/Guest.js`)**: Guest name, phone, email, category (Bride Family, Groom Family, Friends, VIP, Planners), invited events array, dietary preference (Veg, Non-Veg, Vegan, Jain), RSVP status.
+2. **Backend Guest APIs (`routes/weddingRoutes.js`)**:
+   - `POST /api/v1/weddings/:id/guests` (Add Guest)
+   - `GET /api/v1/weddings/:id/guests` (List Guests with category filters)
+   - `PUT /api/v1/weddings/:id/guests/:guestId` (Update Guest & Assigned Functions)
+   - `DELETE /api/v1/weddings/:id/guests/:guestId` (Remove Guest)
+3. **Digital Invitation Creator & WhatsApp Sharing**:
+   - Customizable digital invitation card templates with 1-click WhatsApp invitation link generator.

@@ -13,6 +13,11 @@ const {
   updatePermissionsSchema,
 } = require('../validators/organizerValidator');
 const {
+  validateEvent,
+  validateUpdateEvent,
+} = require('../validators/eventValidator');
+
+const {
   createWedding,
   getMyWeddings,
   getWeddingById,
@@ -25,6 +30,12 @@ const {
   updateOrganizerPermissions,
   revokeOrganizer,
 } = require('../controllers/organizerController');
+const {
+  createEvent,
+  getEvents,
+  updateEvent,
+  deleteEvent,
+} = require('../controllers/eventController');
 
 // All wedding management routes are protected
 router.use(protect);
@@ -41,5 +52,11 @@ router.post('/:id/invite-organizer', validate(inviteOrganizerSchema), inviteOrga
 router.get('/:id/organizers', getOrganizers);
 router.put('/:id/organizers/:membershipId/permissions', validate(updatePermissionsSchema), updateOrganizerPermissions);
 router.delete('/:id/organizers/:membershipId', revokeOrganizer);
+
+// MOD-04 Event Management routes
+router.post('/:id/events', validateEvent, createEvent);
+router.get('/:id/events', getEvents);
+router.put('/:id/events/:eventId', validateUpdateEvent, updateEvent);
+router.delete('/:id/events/:eventId', deleteEvent);
 
 module.exports = router;

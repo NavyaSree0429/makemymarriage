@@ -9,6 +9,8 @@ import InvitePartnerModal from '../features/wedding/InvitePartnerModal';
 import AcceptPartnerInviteModal from '../features/wedding/AcceptPartnerInviteModal';
 import OrganizersListWidget from '../features/organizers/OrganizersListWidget';
 import InviteOrganizerModal from '../features/organizers/InviteOrganizerModal';
+import EventTimelineWidget from '../features/events/EventTimelineWidget';
+import EventManagementModal from '../features/events/EventManagementModal';
 
 import {
   Heart, Calendar, Users, Shield, CheckCircle, Gift, MapPin, Video,
@@ -31,9 +33,24 @@ export default function DashboardPage() {
   const [selectedOrganizerMembership, setSelectedOrganizerMembership] = useState(null);
   const [organizerRefreshKey, setOrganizerRefreshKey] = useState(0);
 
+  // MOD-04 Event Modal Top-Level States
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [selectedEventObj, setSelectedEventObj] = useState(null);
+  const [eventRefreshKey, setEventRefreshKey] = useState(0);
+
   const handleOpenOrganizerModal = (membership = null) => {
     setSelectedOrganizerMembership(membership);
     setShowOrganizerModal(true);
+  };
+
+  const handleOpenCreateEventModal = () => {
+    setSelectedEventObj(null);
+    setShowEventModal(true);
+  };
+
+  const handleOpenEditEventModal = (eventObj) => {
+    setSelectedEventObj(eventObj);
+    setShowEventModal(true);
   };
 
   const handleCopyLink = () => {
@@ -46,6 +63,7 @@ export default function DashboardPage() {
 
   const weddingObj = activeWedding?.wedding;
   const role = activeWedding?.role || 'OWNER';
+  const canManage = role === 'OWNER' || role === 'PARTNER';
 
   return (
     <div className="min-h-screen bg-[#0B0F19] text-slate-100 selection:bg-rose-500 selection:text-white flex flex-col justify-between">
@@ -83,15 +101,25 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Action Buttons: Create New Wedding & Invite Partner */}
-          <div className="flex items-center space-x-2.5">
+          {/* Action Buttons: Create New Wedding, Schedule Function & Invite Partner */}
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setShowCreateModal(true)}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white text-xs font-semibold shadow-md shadow-rose-500/20 transition flex items-center space-x-1.5"
+              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white text-xs font-semibold shadow-md shadow-rose-500/20 transition flex items-center space-x-1.5"
             >
               <Plus className="w-4 h-4" />
               <span>Create New Wedding</span>
             </button>
+
+            {weddingObj && (
+              <button
+                onClick={handleOpenCreateEventModal}
+                className="px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-semibold flex items-center space-x-1.5 transition"
+              >
+                <Calendar className="w-4 h-4 text-amber-300" />
+                <span>+ Add Ceremony</span>
+              </button>
+            )}
 
             {weddingObj && (
               <button
@@ -210,7 +238,7 @@ export default function DashboardPage() {
               <Calendar className="w-4 h-4 text-rose-400" />
             </div>
             <div className="space-y-1">
-              <h3 className="font-serif text-2xl font-bold text-slate-100">5 Functions</h3>
+              <h3 className="font-serif text-2xl font-bold text-slate-100">Multi-Functions</h3>
               <p className="text-[11px] text-rose-300">Haldi, Sangeet, Pheras & Reception</p>
             </div>
             <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
@@ -246,6 +274,19 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* MOD-04 Master Ceremonies Itinerary Timeline Section */}
+        {weddingObj && (
+          <div id="events-section">
+            <EventTimelineWidget
+              weddingId={weddingObj._id}
+              canManage={canManage}
+              onOpenCreateModal={handleOpenCreateEventModal}
+              onOpenEditModal={handleOpenEditEventModal}
+              refreshTrigger={eventRefreshKey}
+            />
+          </div>
+        )}
 
         {/* 2-Column Details Layout: Tasks & Organizers List Widget */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -290,7 +331,7 @@ export default function DashboardPage() {
           <div className="lg:col-span-5 space-y-6">
             <OrganizersListWidget
               weddingId={weddingObj?._id}
-              canManage={role === 'OWNER' || role === 'PARTNER'}
+              canManage={canManage}
               onOpenInviteModal={handleOpenOrganizerModal}
               refreshTrigger={organizerRefreshKey}
             />
@@ -321,6 +362,14 @@ export default function DashboardPage() {
         weddingId={weddingObj?._id}
         existingMembership={selectedOrganizerMembership}
         onRefresh={() => setOrganizerRefreshKey((k) => k + 1)}
+      />
+
+      <EventManagementModal
+        isOpen={showEventModal}
+        onClose={() => setShowEventModal(false)}
+        weddingId={weddingObj?._id}
+        existingEvent={selectedEventObj}
+        onRefresh={() => setEventRefreshKey((k) => k + 1)}
       />
     </div>
   );

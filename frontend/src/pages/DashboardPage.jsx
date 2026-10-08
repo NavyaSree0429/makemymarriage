@@ -11,6 +11,8 @@ import OrganizersListWidget from '../features/organizers/OrganizersListWidget';
 import InviteOrganizerModal from '../features/organizers/InviteOrganizerModal';
 import EventTimelineWidget from '../features/events/EventTimelineWidget';
 import EventManagementModal from '../features/events/EventManagementModal';
+import GuestListWidget from '../features/guests/GuestListWidget';
+import GuestManagementModal from '../features/guests/GuestManagementModal';
 
 import {
   Heart, Calendar, Users, Shield, CheckCircle, Gift, MapPin, Video,
@@ -38,6 +40,11 @@ export default function DashboardPage() {
   const [selectedEventObj, setSelectedEventObj] = useState(null);
   const [eventRefreshKey, setEventRefreshKey] = useState(0);
 
+  // MOD-05 Guest Modal Top-Level States
+  const [showGuestModal, setShowGuestModal] = useState(false);
+  const [selectedGuestObj, setSelectedGuestObj] = useState(null);
+  const [guestRefreshKey, setGuestRefreshKey] = useState(0);
+
   const handleOpenOrganizerModal = (membership = null) => {
     setSelectedOrganizerMembership(membership);
     setShowOrganizerModal(true);
@@ -51,6 +58,16 @@ export default function DashboardPage() {
   const handleOpenEditEventModal = (eventObj) => {
     setSelectedEventObj(eventObj);
     setShowEventModal(true);
+  };
+
+  const handleOpenAddGuestModal = () => {
+    setSelectedGuestObj(null);
+    setShowGuestModal(true);
+  };
+
+  const handleOpenEditGuestModal = (guest) => {
+    setSelectedGuestObj(guest);
+    setShowGuestModal(true);
   };
 
   const handleCopyLink = () => {
@@ -101,7 +118,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Action Buttons: Create New Wedding, Schedule Function & Invite Partner */}
+          {/* Action Buttons: Create New Wedding, Schedule Function, Add Guest & Invite Partner */}
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setShowCreateModal(true)}
@@ -118,6 +135,16 @@ export default function DashboardPage() {
               >
                 <Calendar className="w-4 h-4 text-amber-300" />
                 <span>+ Add Ceremony</span>
+              </button>
+            )}
+
+            {weddingObj && (
+              <button
+                onClick={handleOpenAddGuestModal}
+                className="px-3.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center space-x-1.5 transition"
+              >
+                <Users className="w-4 h-4 text-emerald-400" />
+                <span>+ Add Guest</span>
               </button>
             )}
 
@@ -288,6 +315,20 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* MOD-05 Master Guest List Roster & E-Vites Section */}
+        {weddingObj && (
+          <div id="guests-section">
+            <GuestListWidget
+              weddingId={weddingObj._id}
+              weddingObj={weddingObj}
+              canManage={canManage}
+              onOpenAddGuestModal={handleOpenAddGuestModal}
+              onOpenEditGuestModal={handleOpenEditGuestModal}
+              refreshTrigger={guestRefreshKey}
+            />
+          </div>
+        )}
+
         {/* 2-Column Details Layout: Tasks & Organizers List Widget */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left Column: Tasks */}
@@ -370,6 +411,14 @@ export default function DashboardPage() {
         weddingId={weddingObj?._id}
         existingEvent={selectedEventObj}
         onRefresh={() => setEventRefreshKey((k) => k + 1)}
+      />
+
+      <GuestManagementModal
+        isOpen={showGuestModal}
+        onClose={() => setShowGuestModal(false)}
+        weddingId={weddingObj?._id}
+        existingGuest={selectedGuestObj}
+        onRefresh={() => setGuestRefreshKey((k) => k + 1)}
       />
     </div>
   );

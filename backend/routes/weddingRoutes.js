@@ -16,6 +16,10 @@ const {
   validateEvent,
   validateUpdateEvent,
 } = require('../validators/eventValidator');
+const {
+  validateGuest,
+  validateUpdateGuest,
+} = require('../validators/guestValidator');
 
 const {
   createWedding,
@@ -36,6 +40,12 @@ const {
   updateEvent,
   deleteEvent,
 } = require('../controllers/eventController');
+const {
+  createGuest,
+  getGuests,
+  updateGuest,
+  deleteGuest,
+} = require('../controllers/guestController');
 
 // All wedding management routes are protected
 router.use(protect);
@@ -58,5 +68,11 @@ router.post('/:id/events', validateEvent, createEvent);
 router.get('/:id/events', getEvents);
 router.put('/:id/events/:eventId', validateUpdateEvent, updateEvent);
 router.delete('/:id/events/:eventId', deleteEvent);
+
+// MOD-05 Guest List & Digital Invitations routes
+router.post('/:id/guests', validateGuest, createGuest);
+router.get('/:id/guests', getGuests);
+router.put('/:id/guests/:guestId', validateUpdateGuest, updateGuest);
+router.delete('/:id/guests/:guestId', deleteGuest);
 
 module.exports = router;

@@ -22,8 +22,8 @@
 | **MOD-02** | **Wedding Setup & Partner Management** | ✅ **Completed** | ✅ **Approved & Executed** | Create Wedding, Partner Invitation code system, Switch active wedding context, Role-based membership |
 | **MOD-03** | **Organizer & Permission Management** | ✅ **Completed** | ✅ **Approved & Executed** | Invite Organizers, Granular Module Permissions (8 module toggles), Access Revocation, Roster Widget, 1-Click WhatsApp/Email/Link Sharing |
 | **MOD-04** | **Multiple Events Management** | ✅ **Completed** | ✅ **Approved & Executed** | Event CRUD (Haldi, Mehendi, Sangeet, Wedding, Reception, Custom), Schedules, Google Maps links, Dress Codes, Virtual Live Streams, Edit Ceremony Modal |
-| **MOD-05** | **Guest List & Digital Invitations** | ⏳ **Next Up** | ❓ **Awaiting Approval** | Guest CRUD, Grouping, Event invitations, Customizable Digital Invitation Templates, WhatsApp / Link sharing |
-| **MOD-06** | **Accountless Guest RSVP & Portal** | ⏸️ Not Started | ⏸️ Pending MOD-05 | Public Tokenized RSVP Link, Multi-attendee count, Food preference, RSVP history & update portal |
+| **MOD-05** | **Guest List & Digital Invitations** | ✅ **Completed** | ✅ **Approved & Executed** | Guest CRUD, Category Grouping, Event Checkbox Assignments, Attendee Count, Dietary Tags, Royal Digital E-Invite Preview & 1-Click WhatsApp Dispatch |
+| **MOD-06** | **Accountless Guest RSVP & Portal** | ⏳ **Next Up** | ❓ **Awaiting Approval** | Public Tokenized RSVP Link (`/rsvp/:token`), Multi-attendee count, Food preference, RSVP history & update portal |
 | **MOD-07** | **Task Planner & Assignment** | ⏸️ Not Started | ⏸️ Pending MOD-06 | Task creation, Assignee management (Couple/Organizers), Priorities, Deadlines, Status workflow (Pending/In Progress/Completed) |
 | **MOD-08** | **Vendor & Budget Tracking** | ⏸️ Not Started | ⏸️ Pending MOD-07 | Vendor directory by category, Planned vs. Spent Budget tracker, Permission-controlled financial view |
 | **MOD-09** | **Private Photo Gallery** | ⏸️ Not Started | ⏸️ Pending MOD-08 | Event-based Albums, Couple-only photo upload, Storage adapter integration, Lightbox gallery viewer |
@@ -33,25 +33,26 @@
 
 ---
 
-## 🎨 Stitch MCP Screen Integrated (MOD-04)
-- **Screen ID:** `9f6049c70fef4835b2aded21ae41df57` (`MakeMyMarriage - Ceremonies & Itinerary Master Hub`)
+## 🎨 Stitch MCP Screen Integrated (MOD-05)
+- **Screen ID:** `9828a1adc1894165a1369dd94d4befcb` (`MakeMyMarriage - Guest List Roster & Digital Invitation Hub`)
 - **Components Built**:
-  - [`Event.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/models/Event.js): Ceremony Data model with location metadata & live stream flags.
-  - [`eventController.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/controllers/eventController.js): Full Event CRUD endpoints (`POST`, `GET`, `PUT`, `DELETE`).
-  - [`eventService.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/services/eventService.js): Frontend API service.
-  - [`EventManagementModal.jsx`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/features/events/EventManagementModal.jsx): Modal with function presets, date/time pickers, Google Maps link, dress code tags, live stream embed URL, and pre-filled ceremony editing.
-  - [`EventTimelineWidget.jsx`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/features/events/EventTimelineWidget.jsx): Master Itinerary Timeline widget with category filters, illuminated vertical hairline guide, Google Maps button, dress code badges, and prominent ✏️ Edit Ceremony controls.
-  - [`test_event.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/test_event.js): Automated backend CRUD test suite.
+  - [`Guest.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/models/Guest.js): Guest Data model with tokenized invitation links & dietary preferences.
+  - [`guestController.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/controllers/guestController.js): Full Guest CRUD endpoints (`POST`, `GET`, `PUT`, `DELETE`).
+  - [`guestService.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/services/guestService.js): Frontend API service.
+  - [`GuestManagementModal.jsx`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/features/guests/GuestManagementModal.jsx): Modal for adding/editing guests, category selection, ceremony function checkmarks, attendee counts, and dietary tags.
+  - [`DigitalInviteModal.jsx`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/features/guests/DigitalInviteModal.jsx): Royal digital e-invite preview card with 1-click **WhatsApp Direct Share**, **Email Share**, and **Copy Link** actions.
+  - [`GuestListWidget.jsx`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/features/guests/GuestListWidget.jsx): Master Guest Roster widget with live search, category pills, RSVP status badges, and 1-click WhatsApp e-invite buttons.
+  - [`test_guest.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/test_guest.js): Automated backend CRUD test suite.
 
 ---
 
-## 🎯 Next Proposed Feature: MOD-05 (Guest List & Digital Invitations)
-Once approved by you, **MOD-05** will implement:
-1. **Guest Schema (`models/Guest.js`)**: Guest name, phone, email, category (Bride Family, Groom Family, Friends, VIP, Planners), invited events array, dietary preference (Veg, Non-Veg, Vegan, Jain), RSVP status.
-2. **Backend Guest APIs (`routes/weddingRoutes.js`)**:
-   - `POST /api/v1/weddings/:id/guests` (Add Guest)
-   - `GET /api/v1/weddings/:id/guests` (List Guests with category filters)
-   - `PUT /api/v1/weddings/:id/guests/:guestId` (Update Guest & Assigned Functions)
-   - `DELETE /api/v1/weddings/:id/guests/:guestId` (Remove Guest)
-3. **Digital Invitation Creator & WhatsApp Sharing**:
-   - Customizable digital invitation card templates with 1-click WhatsApp invitation link generator.
+## 🎯 Next Proposed Feature: MOD-06 (Accountless Guest RSVP & Portal)
+Once approved by you, **MOD-06** will implement:
+1. **Public RSVP Route (`/rsvp/:token`)**:
+   - Tokenized public guest portal page accessible without login.
+2. **Interactive Guest Response Form**:
+   - Attendee attendance confirmation (Yes/No per function).
+   - Dietary selection for allocated attendees.
+   - Special song request or blessings note to the couple.
+3. **Real-Time Dashboard Sync**:
+   - Automatically updates guest RSVP status on the host dashboard in real-time.

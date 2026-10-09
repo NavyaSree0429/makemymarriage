@@ -13,6 +13,9 @@ import EventTimelineWidget from '../features/events/EventTimelineWidget';
 import EventManagementModal from '../features/events/EventManagementModal';
 import GuestListWidget from '../features/guests/GuestListWidget';
 import GuestManagementModal from '../features/guests/GuestManagementModal';
+import TaskPlannerWidget from '../features/tasks/TaskPlannerWidget';
+import TaskManagementModal from '../features/tasks/TaskManagementModal';
+import { createTaskApi, getTasksApi, updateTaskApi, deleteTaskApi } from '../services/taskService';
 
 import {
   Heart, Calendar, Users, Shield, CheckCircle, Gift, MapPin, Video,
@@ -20,8 +23,10 @@ import {
 } from 'lucide-react';
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
   const { activeWedding, myWeddings, switchWedding } = useWedding();
+
+  const token = accessToken || localStorage.getItem('access_token');
 
   const [copiedLink, setCopiedLink] = useState(false);
 
@@ -44,6 +49,74 @@ export default function DashboardPage() {
   const [showGuestModal, setShowGuestModal] = useState(false);
   const [selectedGuestObj, setSelectedGuestObj] = useState(null);
   const [guestRefreshKey, setGuestRefreshKey] = useState(0);
+
+  // MOD-07 Task Top-Level States
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [selectedTaskObj, setSelectedTaskObj] = useState(null);
+  const [tasksList, setTasksList] = useState([]);
+  const [taskLoading, setTaskLoading] = useState(false);
+
+  React.useEffect(() => {
+    if (activeWedding?.wedding?._id) {
+      fetchTasks();
+    }
+  }, [activeWedding?.wedding?._id]);
+
+  const fetchTasks = async () => {
+    try {
+      setTaskLoading(true);
+      const res = await getTasksApi(token, activeWedding.wedding._id);
+      setTasksList(res.data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setTaskLoading(false);
+    }
+  };
+
+  const handleOpenAddTaskModal = () => {
+    setSelectedTaskObj(null);
+    setShowTaskModal(true);
+  };
+
+  const handleOpenEditTaskModal = (task) => {
+    setSelectedTaskObj(task);
+    setShowTaskModal(true);
+  };
+
+  const handleSaveTask = async (taskData) => {
+    try {
+      if (selectedTaskObj) {
+        await updateTaskApi(token, activeWedding.wedding._id, selectedTaskObj._id, taskData);
+      } else {
+        await createTaskApi(token, activeWedding.wedding._id, taskData);
+      }
+      setShowTaskModal(false);
+      fetchTasks();
+    } catch (err) {
+      alert(err.message || 'Failed to save task');
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    if (!window.confirm('Are you sure you want to delete this task?')) return;
+    try {
+      await deleteTaskApi(token, activeWedding.wedding._id, taskId);
+      fetchTasks();
+    } catch (err) {
+      alert(err.message || 'Failed to delete task');
+    }
+  };
+
+  const handleToggleTaskStatus = async (task) => {
+    try {
+      const nextStatus = task.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
+      await updateTaskApi(token, activeWedding.wedding._id, task._id, { status: nextStatus });
+      fetchTasks();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleOpenOrganizerModal = (membership = null) => {
     setSelectedOrganizerMembership(membership);
@@ -329,54 +402,28 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* 2-Column Details Layout: Tasks & Organizers List Widget */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left Column: Tasks */}
-          <div className="lg:col-span-7 space-y-6">
-            <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800 rounded-3xl p-6 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <h3 className="font-semibold text-slate-100 text-base flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-amber-400" />
-                  <span>Pending Tasks List</span>
-                </h3>
-                <span className="text-xs text-amber-400 font-semibold">8 Pending</span>
-              </div>
-
-              <div className="space-y-3 text-xs">
-                <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <input type="checkbox" className="rounded accent-rose-500" />
-                    <div>
-                      <p className="font-semibold text-slate-200">Finalize Catering Menu & Food Options</p>
-                      <span className="text-[10px] text-slate-400">Assigned to: Anita (Organizer) • Due in 2 days</span>
-                    </div>
-                  </div>
-                  <span className="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded text-[10px]">High Priority</span>
-                </div>
-
-                <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <input type="checkbox" className="rounded accent-rose-500" />
-                    <div>
-                      <p className="font-semibold text-slate-200">Send Sangeet Choreography Practice Video</p>
-                      <span className="text-[10px] text-slate-400">Assigned to: Priya (Partner) • Due in 5 days</span>
-                    </div>
-                  </div>
-                  <span className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded text-[10px]">Medium Priority</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column: MOD-03 Organizers & Granular Permissions Hub */}
-          <div className="lg:col-span-5 space-y-6">
-            <OrganizersListWidget
-              weddingId={weddingObj?._id}
-              canManage={canManage}
-              onOpenInviteModal={handleOpenOrganizerModal}
-              refreshTrigger={organizerRefreshKey}
+        {/* MOD-07 Task Planner & Master Checklist Section */}
+        {weddingObj && (
+          <div id="tasks-section">
+            <TaskPlannerWidget
+              tasks={tasksList}
+              loading={taskLoading}
+              onAddTask={handleOpenAddTaskModal}
+              onEditTask={handleOpenEditTaskModal}
+              onDeleteTask={handleDeleteTask}
+              onToggleStatus={handleToggleTaskStatus}
             />
           </div>
+        )}
+
+        {/* Organizers List Widget Section */}
+        <div className="grid grid-cols-1 gap-8">
+          <OrganizersListWidget
+            weddingId={weddingObj?._id}
+            canManage={canManage}
+            onOpenInviteModal={handleOpenOrganizerModal}
+            refreshTrigger={organizerRefreshKey}
+          />
         </div>
       </main>
 
@@ -419,6 +466,14 @@ export default function DashboardPage() {
         weddingId={weddingObj?._id}
         existingGuest={selectedGuestObj}
         onRefresh={() => setGuestRefreshKey((k) => k + 1)}
+      />
+
+      <TaskManagementModal
+        isOpen={showTaskModal}
+        onClose={() => setShowTaskModal(false)}
+        onSave={handleSaveTask}
+        task={selectedTaskObj}
+        loading={taskLoading}
       />
     </div>
   );

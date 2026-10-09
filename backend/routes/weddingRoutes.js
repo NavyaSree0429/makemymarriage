@@ -20,6 +20,10 @@ const {
   validateGuest,
   validateUpdateGuest,
 } = require('../validators/guestValidator');
+const {
+  validateTask,
+  validateUpdateTask,
+} = require('../validators/taskValidator');
 
 const {
   createWedding,
@@ -46,6 +50,12 @@ const {
   updateGuest,
   deleteGuest,
 } = require('../controllers/guestController');
+const {
+  createTask,
+  getTasks,
+  updateTask,
+  deleteTask,
+} = require('../controllers/taskController');
 
 // All wedding management routes are protected
 router.use(protect);
@@ -74,5 +84,11 @@ router.post('/:id/guests', validateGuest, createGuest);
 router.get('/:id/guests', getGuests);
 router.put('/:id/guests/:guestId', validateUpdateGuest, updateGuest);
 router.delete('/:id/guests/:guestId', deleteGuest);
+
+// MOD-07 Task Planner & Assignment routes
+router.post('/:id/tasks', validateTask, createTask);
+router.get('/:id/tasks', getTasks);
+router.put('/:id/tasks/:taskId', validateUpdateTask, updateTask);
+router.delete('/:id/tasks/:taskId', deleteTask);
 
 module.exports = router;

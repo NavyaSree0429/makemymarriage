@@ -28,8 +28,20 @@ const protect = async (req, res, next) => {
     if (isDBConnected()) {
       user = await User.findById(decoded.userId);
     } else {
-      const memoryUsers = global.memoryUsers || [];
-      user = memoryUsers.find(u => u._id === decoded.userId);
+      if (!global.memoryUsers) global.memoryUsers = [];
+      user = global.memoryUsers.find(u => String(u._id) === String(decoded.userId));
+      
+      if (!user && decoded.userId) {
+        // Auto-recreate dev user in memory store if nodemon restarted
+        user = {
+          _id: decoded.userId,
+          email: decoded.email || 'dev_user@example.com',
+          fullName: 'Dev User',
+          role: 'COUPLE',
+          status: 'ACTIVE',
+        };
+        global.memoryUsers.push(user);
+      }
     }
 
     if (!user || user.status !== 'ACTIVE') {

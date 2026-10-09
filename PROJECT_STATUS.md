@@ -24,8 +24,8 @@
 | **MOD-04** | **Multiple Events Management** | ✅ **Completed** | ✅ **Approved & Executed** | Event CRUD (Haldi, Mehendi, Sangeet, Wedding, Reception, Custom), Schedules, Google Maps links, Dress Codes, Virtual Live Streams, Edit Ceremony Modal |
 | **MOD-05** | **Guest List & Digital Invitations** | ✅ **Completed** | ✅ **Approved & Executed** | Guest CRUD, Category Grouping, Event Checkbox Assignments, Attendee Count, Dietary Tags, Royal Digital E-Invite Preview & 1-Click WhatsApp Dispatch |
 | **MOD-06** | **Accountless Guest RSVP & Portal** | ✅ **Completed** | ✅ **Approved & Executed** | Public Tokenized RSVP Link (`/rsvp/:token`), Multi-attendee count, Food preference, Event checklist, Wishes/Blessings note, Live RSVP receipt |
-| **MOD-07** | **Task Planner & Assignment** | ⏳ **Next Up** | ❓ **Awaiting Approval** | Task creation, Assignee management (Couple/Organizers), Priorities, Deadlines, Status workflow (Pending/In Progress/Completed) |
-| **MOD-08** | **Vendor & Budget Tracking** | ⏸️ Not Started | ⏸️ Pending MOD-07 | Vendor directory by category, Planned vs. Spent Budget tracker, Permission-controlled financial view |
+| **MOD-07** | **Task Planner & Assignment** | ✅ **Completed** | ✅ **Approved & Executed** | Task CRUD, Categorized Checklists, Priority Levels (Urgent, High, Medium, Low), Assignees, Due Dates, Status Workflows, Visual Progress Bar |
+| **MOD-08** | **Vendor & Budget Tracking** | ⏳ **Next Up** | ❓ **Awaiting Approval** | Vendor directory by category, Planned vs. Spent Budget tracker, Permission-controlled financial view |
 | **MOD-09** | **Private Photo Gallery** | ⏸️ Not Started | ⏸️ Pending MOD-08 | Event-based Albums, Couple-only photo upload, Storage adapter integration, Lightbox gallery viewer |
 | **MOD-10** | **Public Wedding Website & Live Stream** | ⏸️ Not Started | ⏸️ Pending MOD-09 | `/w/:slug` Public Website, Theme selection, Public/Private visibility toggles, Live Stream embed (YouTube Live) |
 | **MOD-11** | **Real-Time Notifications & Reminders** | ⏸️ Not Started | ⏸️ Pending MOD-10 | Socket.IO real-time activity feed, BullMQ + Redis automated RSVP email reminders, In-app notification center |
@@ -33,24 +33,24 @@
 
 ---
 
-## 🎨 Stitch MCP Screen Integrated (MOD-06)
-- **Screen ID:** `99dc89701fa6418f93b734035006104e` (`MakeMyMarriage - Royal Guest RSVP & Passes Portal`)
+## 🎨 Stitch MCP Screen Integrated (MOD-07)
+- **Screen ID:** `fcb6661963d84411a7377b2661a1bd31` (`MakeMyMarriage - Task Planner & Checklist Workspace`)
 - **Components Built**:
-  - [`rsvpRoutes.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/routes/rsvpRoutes.js): Public RSVP API routes (`GET /api/v1/rsvp/:token` & `POST /api/v1/rsvp/:token`).
-  - [`guestController.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/controllers/guestController.js): Public `getPublicRsvpByToken` and `submitPublicRsvp` methods with DB and dev memory fallback.
-  - [`Guest.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/models/Guest.js): Enhanced with `attendingCount`, `acceptedEvents`, and `wishes` fields.
-  - [`guestService.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/services/guestService.js): `getPublicRsvpApi` & `submitPublicRsvpApi` frontend integration.
-  - [`GuestRsvpPage.jsx`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/pages/GuestRsvpPage.jsx): Mobile-first accountless Guest RSVP portal page with crest monogram, ceremony function toggles, dietary preference pills, attendee counters, blessings note, and e-receipt pass.
-  - [`test_rsvp.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/test_rsvp.js): Automated backend API verification script.
+  - [`Task.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/models/Task.js): Task Schema with categories, priority levels, assignees, due dates, and status workflows.
+  - [`taskValidator.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/validators/taskValidator.js): Zod validation middleware (`validateTask`, `validateUpdateTask`).
+  - [`taskController.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/controllers/taskController.js): Full CRUD endpoints (`POST`, `GET`, `PUT`, `DELETE`) with DB & dev memory fallback.
+  - [`taskService.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/services/taskService.js): Frontend API wrapper for task management.
+  - [`TaskPlannerWidget.jsx`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/features/tasks/TaskPlannerWidget.jsx): Visual progress bar, category pills, status tabs, search, and 1-click completion checkmarks.
+  - [`TaskManagementModal.jsx`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/features/tasks/TaskManagementModal.jsx): Add/Edit Task modal form with category, priority, assignee, and due date pickers.
+  - [`test_task.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/test_task.js): Automated backend API verification script.
 
 ---
 
-## 🎯 Next Proposed Feature: MOD-07 (Task Planner & Assignment)
-Once approved by you, **MOD-07** will implement:
-1. **Task Model & Workspace Planner**:
-   - Categorized task checklists (Decor, Catering, Music, Logistics, Outfits, Photography).
-2. **Assignee & Priority Controls**:
-   - Assign tasks to Groom, Bride, or specific Organizers with granular permission checks.
-   - Priority levels (Urgent, High, Medium, Low) & target deadlines.
-3. **Task Status Workflow**:
-   - Status transitions (`PENDING`, `IN_PROGRESS`, `COMPLETED`).
+## 🎯 Next Proposed Feature: MOD-08 (Vendor & Budget Tracking)
+Once approved by you, **MOD-08** will implement:
+1. **Vendor Directory**:
+   - Track vendors by service category (Catering, Venue, Photography, Makeup, DJ/Music, Decor).
+2. **Planned vs. Spent Budget Tracker**:
+   - Financial management, payment installments, deposit status, and remaining balance calculations.
+3. **Financial Permission Enforcement**:
+   - Restricts financial views based on organizer permissions (`canManageBudget`).

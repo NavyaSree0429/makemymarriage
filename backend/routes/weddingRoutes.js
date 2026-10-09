@@ -28,6 +28,10 @@ const {
   validateVendor,
   validateUpdateVendor,
 } = require('../validators/vendorValidator');
+const {
+  validatePhoto,
+  validateUpdatePhoto,
+} = require('../validators/photoValidator');
 
 const {
   createWedding,
@@ -66,6 +70,13 @@ const {
   updateVendor,
   deleteVendor,
 } = require('../controllers/vendorController');
+const {
+  createPhoto,
+  getPhotos,
+  updatePhoto,
+  deletePhoto,
+  toggleLikePhoto,
+} = require('../controllers/photoController');
 
 // All wedding management routes are protected
 router.use(protect);
@@ -107,4 +118,12 @@ router.get('/:id/vendors', getVendors);
 router.put('/:id/vendors/:vendorId', validateUpdateVendor, updateVendor);
 router.delete('/:id/vendors/:vendorId', deleteVendor);
 
+// MOD-09 Photo Gallery & Shared Memories routes
+router.post('/:id/photos', validatePhoto, createPhoto);
+router.get('/:id/photos', getPhotos);
+router.put('/:id/photos/:photoId', validateUpdatePhoto, updatePhoto);
+router.delete('/:id/photos/:photoId', deletePhoto);
+router.post('/:id/photos/:photoId/like', toggleLikePhoto);
+
 module.exports = router;
+

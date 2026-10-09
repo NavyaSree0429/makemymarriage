@@ -19,10 +19,14 @@ import { createTaskApi, getTasksApi, updateTaskApi, deleteTaskApi } from '../ser
 import VendorBudgetWidget from '../features/vendors/VendorBudgetWidget';
 import VendorManagementModal from '../features/vendors/VendorManagementModal';
 import { createVendorApi, getVendorsApi, updateVendorApi, deleteVendorApi } from '../services/vendorService';
+import PhotoGalleryWidget from '../features/photos/PhotoGalleryWidget';
+import PhotoUploadModal from '../features/photos/PhotoUploadModal';
+import LightboxViewerModal from '../features/photos/LightboxViewerModal';
+import { createPhotoApi, getPhotosApi, deletePhotoApi, toggleLikePhotoApi } from '../services/photoService';
 
 import {
   Heart, Calendar, Users, Shield, CheckCircle, Gift, MapPin, Video,
-  Plus, Search, Bell, Copy, Share2, Layers, AlertCircle, ArrowUpRight, Check, KeyRound, UserPlus, DollarSign
+  Plus, Search, Bell, Copy, Share2, Layers, AlertCircle, ArrowUpRight, Check, KeyRound, UserPlus, DollarSign, Camera
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -65,10 +69,18 @@ export default function DashboardPage() {
   const [vendorsList, setVendorsList] = useState([]);
   const [vendorLoading, setVendorLoading] = useState(false);
 
+  // MOD-09 Photo Gallery Top-Level States
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [photosList, setPhotosList] = useState([]);
+  const [photoLoading, setPhotoLoading] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+
   React.useEffect(() => {
     if (activeWedding?.wedding?._id) {
       fetchTasks();
       fetchVendors();
+      fetchPhotos();
     }
   }, [activeWedding?.wedding?._id]);
 
@@ -93,6 +105,18 @@ export default function DashboardPage() {
       console.error(err);
     } finally {
       setVendorLoading(false);
+    }
+  };
+
+  const fetchPhotos = async () => {
+    try {
+      setPhotoLoading(true);
+      const res = await getPhotosApi(token, activeWedding.wedding._id);
+      setPhotosList(res.data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setPhotoLoading(false);
     }
   };
 
@@ -180,6 +204,49 @@ export default function DashboardPage() {
     setShowVendorModal(true);
   };
 
+  // Photo Handlers
+  const handleOpenPhotoUpload = () => {
+    setShowPhotoModal(true);
+  };
+
+  const handleSavePhoto = async (photoData) => {
+    try {
+      await createPhotoApi(token, activeWedding.wedding._id, photoData);
+      setShowPhotoModal(false);
+      fetchPhotos();
+    } catch (err) {
+      alert(err.message || 'Failed to upload photo memory');
+    }
+  };
+
+  const handleDeletePhoto = async (photoId) => {
+    if (!window.confirm('Are you sure you want to delete this photo memory?')) return;
+    try {
+      await deletePhotoApi(token, activeWedding.wedding._id, photoId);
+      fetchPhotos();
+    } catch (err) {
+      alert(err.message || 'Failed to delete photo');
+    }
+  };
+
+  const handleToggleLikePhoto = async (photoId) => {
+    try {
+      const res = await toggleLikePhotoApi(token, activeWedding.wedding._id, photoId);
+      if (res.data) {
+        setPhotosList((prev) =>
+          prev.map((p) => (p._id === photoId ? res.data : p))
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleOpenLightbox = (index) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  };
+
   const handleOpenOrganizerModal = (membership = null) => {
     setSelectedOrganizerMembership(membership);
     setShowOrganizerModal(true);
@@ -261,7 +328,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Action Buttons: Create New Wedding, Schedule Function, Add Guest, Add Vendor & Invite Partner */}
+          {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setShowCreateModal(true)}
@@ -303,6 +370,16 @@ export default function DashboardPage() {
 
             {weddingObj && (
               <button
+                onClick={handleOpenPhotoUpload}
+                className="px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-semibold flex items-center space-x-1.5 transition"
+              >
+                <Camera className="w-4 h-4 text-rose-400" />
+                <span>+ Upload Photo</span>
+              </button>
+            )}
+
+            {weddingObj && (
+              <button
                 onClick={() => setShowInviteModal(true)}
                 className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold flex items-center space-x-1.5 transition"
               >
@@ -321,7 +398,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Wedding Overview Top Banner (Dynamic or Empty State) */}
+        {/* Wedding Overview Top Banner */}
         {!weddingObj ? (
           <div className="bg-slate-900/60 backdrop-blur-2xl border border-dashed border-rose-500/30 rounded-3xl p-10 text-center space-y-4">
             <div className="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 flex items-center justify-center mx-auto text-2xl font-bold">
@@ -330,7 +407,7 @@ export default function DashboardPage() {
             <div className="space-y-1 max-w-md mx-auto">
               <h2 className="font-serif text-2xl font-bold text-slate-100">No Wedding Workspace Created Yet</h2>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Create a new wedding workspace to start managing multi-event timelines, guest RSVPs, task assignments, and vendor budgets.
+                Create a new wedding workspace to start managing multi-event timelines, guest RSVPs, task assignments, vendor budgets, and photo galleries.
               </p>
             </div>
             <div className="flex justify-center space-x-3 pt-2">
@@ -520,6 +597,20 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* MOD-09 Private Photo Gallery & Shared Memories Section */}
+        {weddingObj && (
+          <div id="photos-section">
+            <PhotoGalleryWidget
+              photos={photosList}
+              loading={photoLoading}
+              onUploadPhoto={handleOpenPhotoUpload}
+              onOpenLightbox={handleOpenLightbox}
+              onToggleLike={handleToggleLikePhoto}
+              onDeletePhoto={handleDeletePhoto}
+            />
+          </div>
+        )}
+
         {/* Organizers List Widget Section */}
         <div className="grid grid-cols-1 gap-8">
           <OrganizersListWidget
@@ -587,6 +678,23 @@ export default function DashboardPage() {
         vendor={selectedVendorObj}
         loading={vendorLoading}
       />
+
+      <PhotoUploadModal
+        isOpen={showPhotoModal}
+        onClose={() => setShowPhotoModal(false)}
+        onSave={handleSavePhoto}
+        loading={photoLoading}
+      />
+
+      <LightboxViewerModal
+        isOpen={lightboxOpen}
+        photos={photosList}
+        currentIndex={lightboxIndex}
+        onClose={() => setLightboxOpen(false)}
+        onPrev={() => setLightboxIndex((prev) => (prev > 0 ? prev - 1 : photosList.length - 1))}
+        onNext={() => setLightboxIndex((prev) => (prev < photosList.length - 1 ? prev + 1 : 0))}
+        onToggleLike={handleToggleLikePhoto}
+      />
     </div>
   );
 }
@@ -594,3 +702,4 @@ export default function DashboardPage() {
 function SparklesIcon() {
   return <span className="text-amber-300 font-bold text-xs">✨</span>;
 }
+

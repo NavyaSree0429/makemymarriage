@@ -24,6 +24,10 @@ const {
   validateTask,
   validateUpdateTask,
 } = require('../validators/taskValidator');
+const {
+  validateVendor,
+  validateUpdateVendor,
+} = require('../validators/vendorValidator');
 
 const {
   createWedding,
@@ -56,6 +60,12 @@ const {
   updateTask,
   deleteTask,
 } = require('../controllers/taskController');
+const {
+  createVendor,
+  getVendors,
+  updateVendor,
+  deleteVendor,
+} = require('../controllers/vendorController');
 
 // All wedding management routes are protected
 router.use(protect);
@@ -90,5 +100,11 @@ router.post('/:id/tasks', validateTask, createTask);
 router.get('/:id/tasks', getTasks);
 router.put('/:id/tasks/:taskId', validateUpdateTask, updateTask);
 router.delete('/:id/tasks/:taskId', deleteTask);
+
+// MOD-08 Vendor & Budget Tracking routes
+router.post('/:id/vendors', validateVendor, createVendor);
+router.get('/:id/vendors', getVendors);
+router.put('/:id/vendors/:vendorId', validateUpdateVendor, updateVendor);
+router.delete('/:id/vendors/:vendorId', deleteVendor);
 
 module.exports = router;

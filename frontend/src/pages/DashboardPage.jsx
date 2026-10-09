@@ -16,10 +16,13 @@ import GuestManagementModal from '../features/guests/GuestManagementModal';
 import TaskPlannerWidget from '../features/tasks/TaskPlannerWidget';
 import TaskManagementModal from '../features/tasks/TaskManagementModal';
 import { createTaskApi, getTasksApi, updateTaskApi, deleteTaskApi } from '../services/taskService';
+import VendorBudgetWidget from '../features/vendors/VendorBudgetWidget';
+import VendorManagementModal from '../features/vendors/VendorManagementModal';
+import { createVendorApi, getVendorsApi, updateVendorApi, deleteVendorApi } from '../services/vendorService';
 
 import {
   Heart, Calendar, Users, Shield, CheckCircle, Gift, MapPin, Video,
-  Plus, Search, Bell, Copy, Share2, Layers, AlertCircle, ArrowUpRight, Check, KeyRound, UserPlus
+  Plus, Search, Bell, Copy, Share2, Layers, AlertCircle, ArrowUpRight, Check, KeyRound, UserPlus, DollarSign
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -56,9 +59,16 @@ export default function DashboardPage() {
   const [tasksList, setTasksList] = useState([]);
   const [taskLoading, setTaskLoading] = useState(false);
 
+  // MOD-08 Vendor & Budget Top-Level States
+  const [showVendorModal, setShowVendorModal] = useState(false);
+  const [selectedVendorObj, setSelectedVendorObj] = useState(null);
+  const [vendorsList, setVendorsList] = useState([]);
+  const [vendorLoading, setVendorLoading] = useState(false);
+
   React.useEffect(() => {
     if (activeWedding?.wedding?._id) {
       fetchTasks();
+      fetchVendors();
     }
   }, [activeWedding?.wedding?._id]);
 
@@ -71,6 +81,18 @@ export default function DashboardPage() {
       console.error(err);
     } finally {
       setTaskLoading(false);
+    }
+  };
+
+  const fetchVendors = async () => {
+    try {
+      setVendorLoading(true);
+      const res = await getVendorsApi(token, activeWedding.wedding._id);
+      setVendorsList(res.data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setVendorLoading(false);
     }
   };
 
@@ -118,6 +140,46 @@ export default function DashboardPage() {
     }
   };
 
+  // Vendor Handlers
+  const handleOpenAddVendorModal = () => {
+    setSelectedVendorObj(null);
+    setShowVendorModal(true);
+  };
+
+  const handleOpenEditVendorModal = (vendor) => {
+    setSelectedVendorObj(vendor);
+    setShowVendorModal(true);
+  };
+
+  const handleSaveVendor = async (vendorData) => {
+    try {
+      if (selectedVendorObj) {
+        await updateVendorApi(token, activeWedding.wedding._id, selectedVendorObj._id, vendorData);
+      } else {
+        await createVendorApi(token, activeWedding.wedding._id, vendorData);
+      }
+      setShowVendorModal(false);
+      fetchVendors();
+    } catch (err) {
+      alert(err.message || 'Failed to save vendor record');
+    }
+  };
+
+  const handleDeleteVendor = async (vendorId) => {
+    if (!window.confirm('Are you sure you want to delete this vendor record?')) return;
+    try {
+      await deleteVendorApi(token, activeWedding.wedding._id, vendorId);
+      fetchVendors();
+    } catch (err) {
+      alert(err.message || 'Failed to delete vendor');
+    }
+  };
+
+  const handleRecordPayment = (vendor) => {
+    setSelectedVendorObj(vendor);
+    setShowVendorModal(true);
+  };
+
   const handleOpenOrganizerModal = (membership = null) => {
     setSelectedOrganizerMembership(membership);
     setShowOrganizerModal(true);
@@ -155,6 +217,14 @@ export default function DashboardPage() {
   const role = activeWedding?.role || 'OWNER';
   const canManage = role === 'OWNER' || role === 'PARTNER';
 
+  // Compute dynamic KPI metrics
+  const totalVendorAgreed = vendorsList.reduce((acc, v) => acc + (Number(v.actualCost) || 0), 0);
+  const totalVendorPaid = vendorsList.reduce((acc, v) => acc + (Number(v.paidAmount) || 0), 0);
+  const totalVendorRemaining = Math.max(0, totalVendorAgreed - totalVendorPaid);
+  const budgetPaidPct = totalVendorAgreed > 0 ? Math.min(100, Math.round((totalVendorPaid / totalVendorAgreed) * 100)) : 0;
+
+  const completedTasksCount = tasksList.filter((t) => t.status === 'COMPLETED').length;
+
   return (
     <div className="min-h-screen bg-[#0B0F19] text-slate-100 selection:bg-rose-500 selection:text-white flex flex-col justify-between">
       <Navbar />
@@ -191,7 +261,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Action Buttons: Create New Wedding, Schedule Function, Add Guest & Invite Partner */}
+          {/* Action Buttons: Create New Wedding, Schedule Function, Add Guest, Add Vendor & Invite Partner */}
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setShowCreateModal(true)}
@@ -218,6 +288,16 @@ export default function DashboardPage() {
               >
                 <Users className="w-4 h-4 text-emerald-400" />
                 <span>+ Add Guest</span>
+              </button>
+            )}
+
+            {weddingObj && (
+              <button
+                onClick={handleOpenAddVendorModal}
+                className="px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-semibold flex items-center space-x-1.5 transition"
+              >
+                <Gift className="w-4 h-4 text-amber-400" />
+                <span>+ Add Vendor</span>
               </button>
             )}
 
@@ -352,11 +432,14 @@ export default function DashboardPage() {
               <CheckCircle className="w-4 h-4 text-amber-400" />
             </div>
             <div className="space-y-1">
-              <h3 className="font-serif text-2xl font-bold text-slate-100">24 / 32 Done</h3>
-              <p className="text-[11px] text-amber-400 font-medium">8 Pending • 2 Overdue</p>
+              <h3 className="font-serif text-2xl font-bold text-slate-100">{completedTasksCount} / {tasksList.length} Done</h3>
+              <p className="text-[11px] text-amber-400 font-medium">{tasksList.length - completedTasksCount} Pending Tasks</p>
             </div>
             <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-              <div className="h-full bg-amber-400 w-[75%]"></div>
+              <div
+                className="h-full bg-amber-400 transition-all duration-300"
+                style={{ width: `${tasksList.length > 0 ? (completedTasksCount / tasksList.length) * 100 : 0}%` }}
+              ></div>
             </div>
           </div>
 
@@ -366,11 +449,18 @@ export default function DashboardPage() {
               <Gift className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="space-y-1">
-              <h3 className="font-serif text-2xl font-bold text-slate-100">₹18.5L / ₹25L</h3>
-              <p className="text-[11px] text-emerald-400 font-medium">₹6.5 Lakhs Remaining</p>
+              <h3 className="font-serif text-2xl font-bold text-slate-100">
+                ₹{(totalVendorPaid / 100000).toFixed(1)}L / ₹{(totalVendorAgreed / 100000).toFixed(1)}L
+              </h3>
+              <p className="text-[11px] text-emerald-400 font-medium">
+                ₹{(totalVendorRemaining / 100000).toFixed(1)} Lakhs Due ({vendorsList.length} Vendors)
+              </p>
             </div>
             <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-rose-500 to-emerald-400 w-[74%]"></div>
+              <div
+                className="h-full bg-gradient-to-r from-rose-500 to-emerald-400 transition-all duration-500"
+                style={{ width: `${budgetPaidPct}%` }}
+              ></div>
             </div>
           </div>
         </div>
@@ -412,6 +502,20 @@ export default function DashboardPage() {
               onEditTask={handleOpenEditTaskModal}
               onDeleteTask={handleDeleteTask}
               onToggleStatus={handleToggleTaskStatus}
+            />
+          </div>
+        )}
+
+        {/* MOD-08 Vendor Directory & Budget Tracking Section */}
+        {weddingObj && (
+          <div id="budget-section">
+            <VendorBudgetWidget
+              vendors={vendorsList}
+              loading={vendorLoading}
+              onAddVendor={handleOpenAddVendorModal}
+              onEditVendor={handleOpenEditVendorModal}
+              onDeleteVendor={handleDeleteVendor}
+              onRecordPayment={handleRecordPayment}
             />
           </div>
         )}
@@ -474,6 +578,14 @@ export default function DashboardPage() {
         onSave={handleSaveTask}
         task={selectedTaskObj}
         loading={taskLoading}
+      />
+
+      <VendorManagementModal
+        isOpen={showVendorModal}
+        onClose={() => setShowVendorModal(false)}
+        onSave={handleSaveVendor}
+        vendor={selectedVendorObj}
+        loading={vendorLoading}
       />
     </div>
   );

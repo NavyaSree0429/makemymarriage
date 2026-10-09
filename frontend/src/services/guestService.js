@@ -58,3 +58,27 @@ export const deleteGuestApi = async (token, weddingId, guestId) => {
   }
   return data;
 };
+
+export const getPublicRsvpApi = async (invitationToken) => {
+  const response = await fetch(`${API_BASE_URL}/rsvp/${invitationToken}`);
+  const data = await response.json();
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || 'Failed to fetch invitation details.');
+  }
+  return data;
+};
+
+export const submitPublicRsvpApi = async (invitationToken, payload) => {
+  const response = await fetch(`${API_BASE_URL}/rsvp/${invitationToken}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || 'Failed to submit RSVP response.');
+  }
+  return data;
+};

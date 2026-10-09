@@ -23,8 +23,8 @@
 | **MOD-03** | **Organizer & Permission Management** | ✅ **Completed** | ✅ **Approved & Executed** | Invite Organizers, Granular Module Permissions (8 module toggles), Access Revocation, Roster Widget, 1-Click WhatsApp/Email/Link Sharing |
 | **MOD-04** | **Multiple Events Management** | ✅ **Completed** | ✅ **Approved & Executed** | Event CRUD (Haldi, Mehendi, Sangeet, Wedding, Reception, Custom), Schedules, Google Maps links, Dress Codes, Virtual Live Streams, Edit Ceremony Modal |
 | **MOD-05** | **Guest List & Digital Invitations** | ✅ **Completed** | ✅ **Approved & Executed** | Guest CRUD, Category Grouping, Event Checkbox Assignments, Attendee Count, Dietary Tags, Royal Digital E-Invite Preview & 1-Click WhatsApp Dispatch |
-| **MOD-06** | **Accountless Guest RSVP & Portal** | ⏳ **Next Up** | ❓ **Awaiting Approval** | Public Tokenized RSVP Link (`/rsvp/:token`), Multi-attendee count, Food preference, RSVP history & update portal |
-| **MOD-07** | **Task Planner & Assignment** | ⏸️ Not Started | ⏸️ Pending MOD-06 | Task creation, Assignee management (Couple/Organizers), Priorities, Deadlines, Status workflow (Pending/In Progress/Completed) |
+| **MOD-06** | **Accountless Guest RSVP & Portal** | ✅ **Completed** | ✅ **Approved & Executed** | Public Tokenized RSVP Link (`/rsvp/:token`), Multi-attendee count, Food preference, Event checklist, Wishes/Blessings note, Live RSVP receipt |
+| **MOD-07** | **Task Planner & Assignment** | ⏳ **Next Up** | ❓ **Awaiting Approval** | Task creation, Assignee management (Couple/Organizers), Priorities, Deadlines, Status workflow (Pending/In Progress/Completed) |
 | **MOD-08** | **Vendor & Budget Tracking** | ⏸️ Not Started | ⏸️ Pending MOD-07 | Vendor directory by category, Planned vs. Spent Budget tracker, Permission-controlled financial view |
 | **MOD-09** | **Private Photo Gallery** | ⏸️ Not Started | ⏸️ Pending MOD-08 | Event-based Albums, Couple-only photo upload, Storage adapter integration, Lightbox gallery viewer |
 | **MOD-10** | **Public Wedding Website & Live Stream** | ⏸️ Not Started | ⏸️ Pending MOD-09 | `/w/:slug` Public Website, Theme selection, Public/Private visibility toggles, Live Stream embed (YouTube Live) |
@@ -33,26 +33,24 @@
 
 ---
 
-## 🎨 Stitch MCP Screen Integrated (MOD-05)
-- **Screen ID:** `9828a1adc1894165a1369dd94d4befcb` (`MakeMyMarriage - Guest List Roster & Digital Invitation Hub`)
+## 🎨 Stitch MCP Screen Integrated (MOD-06)
+- **Screen ID:** `99dc89701fa6418f93b734035006104e` (`MakeMyMarriage - Royal Guest RSVP & Passes Portal`)
 - **Components Built**:
-  - [`Guest.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/models/Guest.js): Guest Data model with tokenized invitation links & dietary preferences.
-  - [`guestController.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/controllers/guestController.js): Full Guest CRUD endpoints (`POST`, `GET`, `PUT`, `DELETE`).
-  - [`guestService.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/services/guestService.js): Frontend API service.
-  - [`GuestManagementModal.jsx`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/features/guests/GuestManagementModal.jsx): Modal for adding/editing guests, category selection, ceremony function checkmarks, attendee counts, and dietary tags.
-  - [`DigitalInviteModal.jsx`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/features/guests/DigitalInviteModal.jsx): Royal digital e-invite preview card with 1-click **WhatsApp Direct Share**, **Email Share**, and **Copy Link** actions.
-  - [`GuestListWidget.jsx`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/features/guests/GuestListWidget.jsx): Master Guest Roster widget with live search, category pills, RSVP status badges, and 1-click WhatsApp e-invite buttons.
-  - [`test_guest.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/test_guest.js): Automated backend CRUD test suite.
+  - [`rsvpRoutes.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/routes/rsvpRoutes.js): Public RSVP API routes (`GET /api/v1/rsvp/:token` & `POST /api/v1/rsvp/:token`).
+  - [`guestController.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/controllers/guestController.js): Public `getPublicRsvpByToken` and `submitPublicRsvp` methods with DB and dev memory fallback.
+  - [`Guest.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/models/Guest.js): Enhanced with `attendingCount`, `acceptedEvents`, and `wishes` fields.
+  - [`guestService.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/services/guestService.js): `getPublicRsvpApi` & `submitPublicRsvpApi` frontend integration.
+  - [`GuestRsvpPage.jsx`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/frontend/src/pages/GuestRsvpPage.jsx): Mobile-first accountless Guest RSVP portal page with crest monogram, ceremony function toggles, dietary preference pills, attendee counters, blessings note, and e-receipt pass.
+  - [`test_rsvp.js`](file:///c:/Users/knavy/OneDrive/Desktop/makemymarriage/backend/test_rsvp.js): Automated backend API verification script.
 
 ---
 
-## 🎯 Next Proposed Feature: MOD-06 (Accountless Guest RSVP & Portal)
-Once approved by you, **MOD-06** will implement:
-1. **Public RSVP Route (`/rsvp/:token`)**:
-   - Tokenized public guest portal page accessible without login.
-2. **Interactive Guest Response Form**:
-   - Attendee attendance confirmation (Yes/No per function).
-   - Dietary selection for allocated attendees.
-   - Special song request or blessings note to the couple.
-3. **Real-Time Dashboard Sync**:
-   - Automatically updates guest RSVP status on the host dashboard in real-time.
+## 🎯 Next Proposed Feature: MOD-07 (Task Planner & Assignment)
+Once approved by you, **MOD-07** will implement:
+1. **Task Model & Workspace Planner**:
+   - Categorized task checklists (Decor, Catering, Music, Logistics, Outfits, Photography).
+2. **Assignee & Priority Controls**:
+   - Assign tasks to Groom, Bride, or specific Organizers with granular permission checks.
+   - Priority levels (Urgent, High, Medium, Low) & target deadlines.
+3. **Task Status Workflow**:
+   - Status transitions (`PENDING`, `IN_PROGRESS`, `COMPLETED`).

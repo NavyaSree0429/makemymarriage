@@ -62,6 +62,21 @@ const guestSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    attendingCount: {
+      type: Number,
+      default: 0,
+    },
+    acceptedEvents: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Event',
+      },
+    ],
+    wishes: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     createdByUser: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

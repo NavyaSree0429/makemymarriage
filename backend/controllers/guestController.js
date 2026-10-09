@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const crypto = require('crypto');
 const Guest = require('../models/Guest');
+const Wedding = require('../models/Wedding');
+const Event = require('../models/Event');
 const WeddingMembership = require('../models/WeddingMembership');
 const { sendSuccess, sendError } = require('../utils/apiResponse');
 
@@ -197,9 +199,118 @@ const deleteGuest = async (req, res, next) => {
   }
 };
 
+/**
+ * Public Get RSVP Details by Invitation Token
+ * GET /api/v1/rsvp/:token
+ */
+const getPublicRsvpByToken = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+
+    if (isDBConnected()) {
+      const guest = await Guest.findOne({ invitationToken: token })
+        .populate('weddingId')
+        .populate('invitedEvents')
+        .populate('acceptedEvents');
+
+      if (!guest) {
+        return sendError(res, 404, 'Invalid or expired invitation link.', 'INVITATION_NOT_FOUND');
+      }
+
+      return sendSuccess(res, 200, 'RSVP invitation details retrieved', guest);
+    } else {
+      const guests = getMemoryGuests();
+      const guest = guests.find((g) => g.invitationToken === token);
+      if (!guest) {
+        return sendError(res, 404, 'Invalid or expired invitation link (Dev Memory Mode)', 'INVITATION_NOT_FOUND');
+      }
+
+      // Memory populate wedding and events
+      const wedding = (global.memoryWeddings || []).find((w) => String(w._id) === String(guest.weddingId)) || {
+        _id: guest.weddingId,
+        title: 'Royal Destination Wedding',
+        groomName: 'Vikram',
+        brideName: 'Ananya',
+        weddingDate: '2026-11-28',
+        location: 'Udaipur Palace, Rajasthan',
+      };
+
+      const events = (global.memoryEvents || []).filter((e) => String(e.weddingId) === String(guest.weddingId));
+
+      const populatedGuest = {
+        ...guest,
+        weddingId: wedding,
+        invitedEvents: events.length > 0 ? events : guest.invitedEvents || [],
+      };
+
+      return sendSuccess(res, 200, 'RSVP invitation details retrieved (Dev Memory Mode)', populatedGuest);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Public Submit RSVP Response by Invitation Token
+ * POST /api/v1/rsvp/:token
+ */
+const submitPublicRsvp = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const { rsvpStatus, attendingCount, dietaryPreference, acceptedEvents, wishes } = req.body;
+
+    if (!['CONFIRMED', 'DECLINED'].includes(rsvpStatus)) {
+      return sendError(res, 400, 'rsvpStatus must be CONFIRMED or DECLINED', 'VALIDATION_ERROR');
+    }
+
+    if (isDBConnected()) {
+      const guest = await Guest.findOne({ invitationToken: token });
+      if (!guest) {
+        return sendError(res, 404, 'Invalid or expired invitation link.', 'INVITATION_NOT_FOUND');
+      }
+
+      guest.rsvpStatus = rsvpStatus;
+      if (attendingCount !== undefined) {
+        guest.attendingCount = Math.min(Math.max(1, Number(attendingCount) || 1), guest.allocatedAttendees || 1);
+      }
+      if (dietaryPreference) guest.dietaryPreference = dietaryPreference;
+      if (acceptedEvents && Array.isArray(acceptedEvents)) guest.acceptedEvents = acceptedEvents;
+      if (wishes !== undefined) guest.wishes = wishes;
+
+      await guest.save();
+
+      const updatedGuest = await Guest.findById(guest._id)
+        .populate('weddingId')
+        .populate('invitedEvents')
+        .populate('acceptedEvents');
+
+      return sendSuccess(res, 200, 'RSVP response submitted successfully!', updatedGuest);
+    } else {
+      const guests = getMemoryGuests();
+      const guest = guests.find((g) => g.invitationToken === token);
+      if (!guest) {
+        return sendError(res, 404, 'Invalid or expired invitation link.', 'INVITATION_NOT_FOUND');
+      }
+
+      guest.rsvpStatus = rsvpStatus;
+      if (attendingCount !== undefined) guest.attendingCount = attendingCount;
+      if (dietaryPreference) guest.dietaryPreference = dietaryPreference;
+      if (acceptedEvents) guest.acceptedEvents = acceptedEvents;
+      if (wishes !== undefined) guest.wishes = wishes;
+      guest.updatedAt = new Date().toISOString();
+
+      return sendSuccess(res, 200, 'RSVP response submitted successfully! (Dev Memory Mode)', guest);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createGuest,
   getGuests,
   updateGuest,
   deleteGuest,
+  getPublicRsvpByToken,
+  submitPublicRsvp,
 };

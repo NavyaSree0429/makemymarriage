@@ -63,6 +63,104 @@ const createWedding = async (req, res, next) => {
         },
       });
 
+      // Auto-seed default ceremony timeline & checklist tasks for instant planning
+      try {
+        const Event = require('../models/Event');
+        const Task = require('../models/Task');
+
+        await Event.insertMany([
+          {
+            weddingId: wedding._id,
+            createdByUser: userId,
+            title: 'Haldi & Chooda Ceremony 🌼',
+            eventType: 'HALDI',
+            date: new Date(weddingDate),
+            startTime: '10:00 AM',
+            endTime: '01:00 PM',
+            location: { venueName: venueName || 'Palace Garden Courtyard', city: city || 'Destination' },
+            dressCode: 'Pastel Yellow Traditional',
+            description: 'Turmeric laughter & joyful blessing rituals.',
+          },
+          {
+            weddingId: wedding._id,
+            createdByUser: userId,
+            title: 'Royal Sangeet & Musical Night 💃',
+            eventType: 'SANGEET',
+            date: new Date(weddingDate),
+            startTime: '07:00 PM',
+            endTime: '11:30 PM',
+            location: { venueName: venueName || 'Grand Ballroom', city: city || 'Destination' },
+            dressCode: 'Indo-Western Glam & Sparkles',
+            description: 'Grand musical dance performances under crystal chandeliers.',
+          },
+          {
+            weddingId: wedding._id,
+            createdByUser: userId,
+            title: 'Sacred Pheras & Wedding Vows 💍',
+            eventType: 'WEDDING',
+            date: new Date(weddingDate),
+            startTime: '04:00 PM',
+            endTime: '08:00 PM',
+            location: { venueName: venueName || 'Royal Mandap Pavilion', city: city || 'Destination' },
+            dressCode: 'Royal Red & Gold Ethnic Heritage',
+            description: 'Auspicious Vedic phera rituals around holy fire.',
+          },
+          {
+            weddingId: wedding._id,
+            createdByUser: userId,
+            title: 'Gala Reception & Banquet Dinner 🍷',
+            eventType: 'RECEPTION',
+            date: new Date(weddingDate),
+            startTime: '08:00 PM',
+            endTime: '11:59 PM',
+            location: { venueName: venueName || 'Palace Banquet Hall', city: city || 'Destination' },
+            dressCode: 'Black Tie / High Elegance',
+            description: 'Evening celebration with live music band & gourmet dinner.',
+          },
+        ]);
+
+        await Task.insertMany([
+          {
+            weddingId: wedding._id,
+            createdByUser: userId,
+            title: 'Finalize & Reserve Main Wedding Venue',
+            category: 'LOGISTICS',
+            priority: 'URGENT',
+            status: 'PENDING',
+            assigneeName: partner1Name || 'Partner 1',
+          },
+          {
+            weddingId: wedding._id,
+            createdByUser: userId,
+            title: 'Send Digital RSVPs & Save-the-Dates to Guests',
+            category: 'GENERAL',
+            priority: 'HIGH',
+            status: 'PENDING',
+            assigneeName: partner2Name || 'Partner 2',
+          },
+          {
+            weddingId: wedding._id,
+            createdByUser: userId,
+            title: 'Book Lead Wedding Photographer & Cinematographer',
+            category: 'PHOTOGRAPHY',
+            priority: 'HIGH',
+            status: 'PENDING',
+            assigneeName: partner1Name || 'Partner 1',
+          },
+          {
+            weddingId: wedding._id,
+            createdByUser: userId,
+            title: 'Finalize Royal Catering Menu & Tasting Session',
+            category: 'CATERING',
+            priority: 'MEDIUM',
+            status: 'PENDING',
+            assigneeName: partner2Name || 'Partner 2',
+          },
+        ]);
+      } catch (seedErr) {
+        console.warn('Auto-seed warning:', seedErr.message);
+      }
+
       return sendSuccess(res, 201, 'Wedding workspace created successfully', {
         wedding,
         membership,
@@ -73,7 +171,7 @@ const createWedding = async (req, res, next) => {
       const memberships = getMemoryMemberships();
 
       const memWedding = {
-        _id: `mem_w_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        _id: new mongoose.Types.ObjectId().toString(),
         ownerId: userId,
         partnerNames: { partner1: partner1Name, partner2: partner2Name },
         slug,
@@ -84,11 +182,12 @@ const createWedding = async (req, res, next) => {
         status: 'PLANNING',
         title: `${partner1Name} & ${partner2Name}'s Wedding`,
         createdAt: new Date().toISOString(),
+        rsvpToken: 'rsvp_' + Math.random().toString(36).substr(2, 9),
       };
       weddings.push(memWedding);
 
       const memMembership = {
-        _id: `mem_m_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        _id: new mongoose.Types.ObjectId().toString(),
         weddingId: memWedding._id,
         userId: userId,
         role: 'OWNER',
@@ -105,6 +204,107 @@ const createWedding = async (req, res, next) => {
         joinedAt: new Date().toISOString(),
       };
       memberships.push(memMembership);
+
+      if (!global.memoryEvents) global.memoryEvents = [];
+      if (!global.memoryTasks) global.memoryTasks = [];
+
+      global.memoryEvents.push(
+        {
+          _id: new mongoose.Types.ObjectId().toString(),
+          weddingId: memWedding._id,
+          createdByUser: userId,
+          title: 'Haldi & Chooda Ceremony 🌼',
+          eventType: 'HALDI',
+          date: new Date(weddingDate).toISOString(),
+          startTime: '10:00 AM',
+          endTime: '01:00 PM',
+          location: { venueName: venueName || 'Palace Garden Courtyard', city: city || 'Destination' },
+          dressCode: 'Pastel Yellow Traditional',
+          description: 'Turmeric laughter & joyful blessing rituals.',
+        },
+        {
+          _id: new mongoose.Types.ObjectId().toString(),
+          weddingId: memWedding._id,
+          createdByUser: userId,
+          title: 'Royal Sangeet & Musical Night 💃',
+          eventType: 'SANGEET',
+          date: new Date(weddingDate).toISOString(),
+          startTime: '07:00 PM',
+          endTime: '11:30 PM',
+          location: { venueName: venueName || 'Grand Ballroom', city: city || 'Destination' },
+          dressCode: 'Indo-Western Glam & Sparkles',
+          description: 'Grand musical dance performances under crystal chandeliers.',
+        },
+        {
+          _id: new mongoose.Types.ObjectId().toString(),
+          weddingId: memWedding._id,
+          createdByUser: userId,
+          title: 'Sacred Pheras & Wedding Vows 💍',
+          eventType: 'WEDDING',
+          date: new Date(weddingDate).toISOString(),
+          startTime: '04:00 PM',
+          endTime: '08:00 PM',
+          location: { venueName: venueName || 'Royal Mandap Pavilion', city: city || 'Destination' },
+          dressCode: 'Royal Red & Gold Ethnic Heritage',
+          description: 'Auspicious Vedic phera rituals around holy fire.',
+        },
+        {
+          _id: new mongoose.Types.ObjectId().toString(),
+          weddingId: memWedding._id,
+          createdByUser: userId,
+          title: 'Gala Reception & Banquet Dinner 🍷',
+          eventType: 'RECEPTION',
+          date: new Date(weddingDate).toISOString(),
+          startTime: '08:00 PM',
+          endTime: '11:59 PM',
+          location: { venueName: venueName || 'Palace Banquet Hall', city: city || 'Destination' },
+          dressCode: 'Black Tie / High Elegance',
+          description: 'Evening celebration with live music band & gourmet dinner.',
+        }
+      );
+
+      global.memoryTasks.push(
+        {
+          _id: new mongoose.Types.ObjectId().toString(),
+          weddingId: memWedding._id,
+          createdByUser: userId,
+          title: 'Finalize & Reserve Main Wedding Venue',
+          category: 'LOGISTICS',
+          priority: 'URGENT',
+          status: 'PENDING',
+          assigneeName: partner1Name || 'Partner 1',
+        },
+        {
+          _id: new mongoose.Types.ObjectId().toString(),
+          weddingId: memWedding._id,
+          createdByUser: userId,
+          title: 'Send Digital RSVPs & Save-the-Dates to Guests',
+          category: 'GENERAL',
+          priority: 'HIGH',
+          status: 'PENDING',
+          assigneeName: partner2Name || 'Partner 2',
+        },
+        {
+          _id: new mongoose.Types.ObjectId().toString(),
+          weddingId: memWedding._id,
+          createdByUser: userId,
+          title: 'Book Lead Wedding Photographer & Cinematographer',
+          category: 'PHOTOGRAPHY',
+          priority: 'HIGH',
+          status: 'PENDING',
+          assigneeName: partner1Name || 'Partner 1',
+        },
+        {
+          _id: new mongoose.Types.ObjectId().toString(),
+          weddingId: memWedding._id,
+          createdByUser: userId,
+          title: 'Finalize Royal Catering Menu & Tasting Session',
+          category: 'CATERING',
+          priority: 'MEDIUM',
+          status: 'PENDING',
+          assigneeName: partner2Name || 'Partner 2',
+        }
+      );
 
       return sendSuccess(res, 201, 'Wedding workspace created successfully (Dev Memory Mode)', {
         wedding: memWedding,
@@ -125,18 +325,121 @@ const getMyWeddings = async (req, res, next) => {
     const userId = req.user._id || req.user.id;
 
     if (isDBConnected()) {
-      const memberships = await WeddingMembership.find({ userId }).populate('weddingId');
-      const list = memberships.map((m) => ({
-        wedding: m.weddingId,
-        role: m.role,
-        permissions: m.permissions,
-        joinedAt: m.joinedAt,
-      }));
+      let memberships = await WeddingMembership.find({ userId }).populate('weddingId');
+
+      // If user has no memberships yet, auto-assign or seed default wedding
+      if (memberships.length === 0) {
+        let wedding = await Wedding.findOne({ slug: 'virat-anushka' });
+        if (!wedding) {
+          wedding = await Wedding.findOne().sort({ createdAt: -1 });
+        }
+        if (!wedding) {
+          wedding = await Wedding.create({
+            ownerId: userId,
+            partnerNames: { partner1: 'Virat', partner2: 'Anushka' },
+            slug: 'virat-anushka',
+            weddingDate: new Date('2026-12-31'),
+            primaryLocation: { city: 'Udaipur, Rajasthan', venueName: 'Udaipur City Palace' },
+            description: 'Grand royal wedding celebrations at Rajasthan City Palace.',
+            theme: 'ROYAL',
+          });
+        }
+
+        const autoMembership = await WeddingMembership.create({
+          weddingId: wedding._id,
+          userId,
+          role: 'OWNER',
+          permissions: {
+            canManageEvents: true,
+            canManageGuests: true,
+            canManageInvitations: true,
+            canManageTasks: true,
+            canManageVendors: true,
+            canManageBudget: true,
+            canManageGallery: true,
+            canManageWebsite: true,
+          },
+        });
+        const populated = await WeddingMembership.findById(autoMembership._id).populate('weddingId');
+        memberships = [populated];
+      }
+
+      const list = memberships
+        .filter((m) => m && m.weddingId)
+        .map((m) => ({
+          wedding: m.weddingId,
+          role: m.role,
+          permissions: m.permissions,
+          joinedAt: m.joinedAt,
+        }));
       return sendSuccess(res, 200, 'User weddings retrieved', list);
     } else {
-      const memberships = getMemoryMemberships().filter(m => String(m.userId) === String(userId));
+      const memberships = getMemoryMemberships();
       const weddings = getMemoryWeddings();
-      const list = memberships.map(m => {
+
+      // Auto-seed default wedding workspace if dev memory is empty
+      if (weddings.length === 0) {
+        const defaultWedding = {
+          _id: '650000000000000000000001',
+          ownerId: userId,
+          partnerNames: { partner1: 'Virat', partner2: 'Anushka' },
+          slug: 'virat-anushka',
+          weddingDate: '2026-12-31T00:00:00.000Z',
+          primaryLocation: { city: 'Udaipur, Rajasthan', venueName: 'Udaipur City Palace' },
+          description: 'Grand royal wedding celebrations at Rajasthan City Palace.',
+          theme: 'ROYAL',
+          status: 'PLANNING',
+          title: "Virat & Anushka's Wedding",
+          createdAt: new Date().toISOString(),
+          rsvpToken: 'rsvp_public_demo_token',
+        };
+        weddings.push(defaultWedding);
+
+        const defaultMembership = {
+          _id: '650000000000000000000002',
+          weddingId: defaultWedding._id,
+          userId: userId,
+          role: 'OWNER',
+          permissions: {
+            canManageEvents: true,
+            canManageGuests: true,
+            canManageInvitations: true,
+            canManageTasks: true,
+            canManageVendors: true,
+            canManageBudget: true,
+            canManageGallery: true,
+            canManageWebsite: true,
+          },
+          joinedAt: new Date().toISOString(),
+        };
+        memberships.push(defaultMembership);
+      }
+
+      // Ensure logged in user has membership in at least one wedding
+      let userMemberships = memberships.filter(m => String(m.userId) === String(userId));
+      if (userMemberships.length === 0 && weddings.length > 0) {
+        const autoMembership = {
+          _id: new mongoose.Types.ObjectId().toString(),
+          weddingId: weddings[0]._id,
+          userId: userId,
+          role: 'OWNER',
+          permissions: {
+            canManageEvents: true,
+            canManageGuests: true,
+            canManageInvitations: true,
+            canManageTasks: true,
+            canManageVendors: true,
+            canManageBudget: true,
+            canManageGallery: true,
+            canManageWebsite: true,
+          },
+          joinedAt: new Date().toISOString(),
+        };
+        memberships.push(autoMembership);
+        userMemberships = [autoMembership];
+      }
+
+      const list = userMemberships.map(m => {
         const w = weddings.find(item => String(item._id) === String(m.weddingId));
         return {
           wedding: w,

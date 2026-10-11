@@ -22,6 +22,7 @@ export function WeddingProvider({ children }) {
       if (!accessToken || !user) {
         setMyWeddings([]);
         setActiveWedding(null);
+        localStorage.removeItem('activeWeddingId');
         return;
       }
       setLoading(true);
@@ -30,8 +31,19 @@ export function WeddingProvider({ children }) {
         const list = res.data || [];
         setMyWeddings(list);
         if (list.length > 0) {
-          // Default active wedding to first
-          setActiveWedding(list[0]);
+          const savedId = localStorage.getItem('activeWeddingId');
+          const found = list.find((item) => String(item.wedding?._id) === String(savedId));
+          if (found) {
+            setActiveWedding(found);
+          } else {
+            setActiveWedding(list[0]);
+            if (list[0].wedding?._id) {
+              localStorage.setItem('activeWeddingId', list[0].wedding._id);
+            }
+          }
+        } else {
+          setActiveWedding(null);
+          localStorage.removeItem('activeWeddingId');
         }
       } catch (err) {
         setError(err.message);
@@ -54,6 +66,9 @@ export function WeddingProvider({ children }) {
       };
       setMyWeddings((prev) => [newEntry, ...prev]);
       setActiveWedding(newEntry);
+      if (newEntry.wedding?._id) {
+        localStorage.setItem('activeWeddingId', newEntry.wedding._id);
+      }
       return newEntry;
     } catch (err) {
       setError(err.message);
@@ -82,6 +97,9 @@ export function WeddingProvider({ children }) {
       };
       setMyWeddings((prev) => [newEntry, ...prev]);
       setActiveWedding(newEntry);
+      if (newEntry.wedding?._id) {
+        localStorage.setItem('activeWeddingId', newEntry.wedding._id);
+      }
       return newEntry;
     } catch (err) {
       setError(err.message);
@@ -93,6 +111,9 @@ export function WeddingProvider({ children }) {
     const found = myWeddings.find((item) => String(item.wedding?._id) === String(weddingId));
     if (found) {
       setActiveWedding(found);
+      if (found.wedding?._id) {
+        localStorage.setItem('activeWeddingId', found.wedding._id);
+      }
     }
   };
 

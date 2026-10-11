@@ -99,10 +99,74 @@ const getEvents = async (req, res, next) => {
       const events = await Event.find({ weddingId: id }).sort({ date: 1, startTime: 1 });
       return sendSuccess(res, 200, 'Wedding events itinerary retrieved', events);
     } else {
-      const events = getMemoryEvents()
-        .filter(e => String(e.weddingId) === String(id))
-        .sort((a, b) => new Date(a.date) - new Date(b.date));
+      let events = getMemoryEvents().filter(e => String(e.weddingId) === String(id));
 
+      // Auto-seed default ceremonies if memory is empty for default demo wedding
+      if (events.length === 0 && (id === '650000000000000000000001' || id === 'wed_default_demo_1')) {
+        const seedEvents = [
+          {
+            _id: 'evt_demo_1',
+            weddingId: id,
+            createdByUser: currentUserId,
+            title: 'Haldi & Chooda Ceremony 🌼',
+            eventType: 'HALDI',
+            date: new Date('2026-12-29').toISOString(),
+            startTime: '10:00 AM',
+            endTime: '01:00 PM',
+            location: { venueName: 'Palace Garden Courtyard', city: 'Udaipur', googleMapsUrl: 'https://maps.google.com' },
+            dressCode: 'Pastel Yellow Traditional',
+            description: 'Turmeric laughter & joyful blessing rituals with traditional folk music.',
+            createdAt: new Date().toISOString(),
+          },
+          {
+            _id: 'evt_demo_2',
+            weddingId: id,
+            createdByUser: currentUserId,
+            title: 'Royal Sangeet & Musical Night 💃',
+            eventType: 'SANGEET',
+            date: new Date('2026-12-29').toISOString(),
+            startTime: '07:00 PM',
+            endTime: '11:30 PM',
+            location: { venueName: 'Crystal Ballroom', city: 'Udaipur', googleMapsUrl: 'https://maps.google.com' },
+            dressCode: 'Indo-Western Glam & Sparkles',
+            description: 'Grand musical dance performances under royal crystal chandeliers.',
+            createdAt: new Date().toISOString(),
+          },
+          {
+            _id: 'evt_demo_3',
+            weddingId: id,
+            createdByUser: currentUserId,
+            title: 'Sacred Pheras & Wedding Vows 💍',
+            eventType: 'WEDDING',
+            date: new Date('2026-12-30').toISOString(),
+            startTime: '04:00 PM',
+            endTime: '08:00 PM',
+            location: { venueName: 'Golden Mandap Pavilion', city: 'Udaipur', googleMapsUrl: 'https://maps.google.com' },
+            dressCode: 'Royal Traditional Wear',
+            description: 'Sacred wedding vows around the holy fire as sun sets over Lake Pichola.',
+            createdAt: new Date().toISOString(),
+          },
+          {
+            _id: 'evt_demo_4',
+            weddingId: id,
+            createdByUser: currentUserId,
+            title: 'Grand Reception Banquet 🥂',
+            eventType: 'RECEPTION',
+            date: new Date('2026-12-31').toISOString(),
+            startTime: '08:00 PM',
+            endTime: '01:00 AM',
+            location: { venueName: 'Grand Palace Lawns', city: 'Udaipur', googleMapsUrl: 'https://maps.google.com' },
+            dressCode: 'Formal Black Tie & Couture',
+            description: 'Celebratory banquet, fireworks display, and new year toast.',
+            createdAt: new Date().toISOString(),
+          },
+        ];
+        const allMemory = getMemoryEvents();
+        allMemory.push(...seedEvents);
+        events = seedEvents;
+      }
+
+      events.sort((a, b) => new Date(a.date) - new Date(b.date));
       return sendSuccess(res, 200, 'Wedding events itinerary retrieved (Dev Memory Mode)', events);
     }
   } catch (error) {

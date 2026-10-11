@@ -8,6 +8,7 @@ import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import DashboardPage from './pages/DashboardPage';
 import GuestRsvpPage from './pages/GuestRsvpPage';
+import PublicWeddingPage from './pages/PublicWeddingPage';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -37,6 +38,7 @@ export default function App() {
             <Route path="/signin" element={<SignInPage />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/rsvp/:token" element={<GuestRsvpPage />} />
+            <Route path="/w/:slug" element={<PublicWeddingPage />} />
             <Route
               path="/dashboard"
               element={

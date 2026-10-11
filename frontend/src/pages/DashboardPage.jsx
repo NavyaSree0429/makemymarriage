@@ -23,10 +23,12 @@ import PhotoGalleryWidget from '../features/photos/PhotoGalleryWidget';
 import PhotoUploadModal from '../features/photos/PhotoUploadModal';
 import LightboxViewerModal from '../features/photos/LightboxViewerModal';
 import { createPhotoApi, getPhotosApi, deletePhotoApi, toggleLikePhotoApi } from '../services/photoService';
+import { getEventsApi } from '../services/eventService';
+import { getGuestsApi } from '../services/guestService';
 
 import {
   Heart, Calendar, Users, Shield, CheckCircle, Gift, MapPin, Video,
-  Plus, Search, Bell, Copy, Share2, Layers, AlertCircle, ArrowUpRight, Check, KeyRound, UserPlus, DollarSign, Camera
+  Plus, Search, Bell, Copy, Share2, Layers, AlertCircle, ArrowUpRight, Check, KeyRound, UserPlus, DollarSign, Camera, Sparkles
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -76,13 +78,37 @@ export default function DashboardPage() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
+  // Dynamic KPI States for Events & Guests
+  const [eventsList, setEventsList] = useState([]);
+  const [guestsList, setGuestsList] = useState([]);
+
   React.useEffect(() => {
     if (activeWedding?.wedding?._id) {
+      fetchEvents();
+      fetchGuests();
       fetchTasks();
       fetchVendors();
       fetchPhotos();
     }
-  }, [activeWedding?.wedding?._id]);
+  }, [activeWedding?.wedding?._id, eventRefreshKey, guestRefreshKey]);
+
+  const fetchEvents = async () => {
+    try {
+      const res = await getEventsApi(accessToken, activeWedding.wedding._id);
+      setEventsList(res.data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchGuests = async () => {
+    try {
+      const res = await getGuestsApi(accessToken, activeWedding.wedding._id);
+      setGuestsList(res.data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchTasks = async () => {
     try {
@@ -292,6 +318,16 @@ export default function DashboardPage() {
 
   const completedTasksCount = tasksList.filter((t) => t.status === 'COMPLETED').length;
 
+  const totalGuestsCount = guestsList.length;
+  const confirmedGuestsCount = guestsList.filter((g) => g.rsvpStatus === 'ACCEPTED' || g.rsvpStatus === 'CONFIRMED').length;
+  const pendingGuestsCount = guestsList.filter((g) => g.rsvpStatus === 'PENDING').length;
+  const guestRsvpPct = totalGuestsCount > 0 ? Math.round((confirmedGuestsCount / totalGuestsCount) * 100) : 0;
+
+  const totalEventsCount = eventsList.length;
+  const eventTypesSummary = eventsList.length > 0
+    ? eventsList.map((e) => e.eventType || 'Event').slice(0, 4).join(', ')
+    : 'No events added yet';
+
   return (
     <div className="min-h-screen bg-[#0B0F19] text-slate-100 selection:bg-rose-500 selection:text-white flex flex-col justify-between">
       <Navbar />
@@ -450,6 +486,16 @@ export default function DashboardPage() {
 
               {/* Quick Action Shortcuts */}
               <div className="flex flex-wrap items-center gap-3">
+                <a
+                  href={`/w/${weddingObj.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-semibold flex items-center space-x-2 transition"
+                >
+                  <Sparkles className="w-4 h-4 text-[#F3E5AB]" />
+                  <span>View Public Website</span>
+                </a>
+
                 <button
                   onClick={handleCopyLink}
                   className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold flex items-center space-x-2 transition"
@@ -481,11 +527,11 @@ export default function DashboardPage() {
               <Users className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="space-y-1">
-              <h3 className="font-serif text-2xl font-bold text-slate-100">342 / 450</h3>
-              <p className="text-[11px] text-emerald-400 font-medium">82% Confirmed • 18 Pending</p>
+              <h3 className="font-serif text-2xl font-bold text-slate-100">{confirmedGuestsCount} / {totalGuestsCount}</h3>
+              <p className="text-[11px] text-emerald-400 font-medium">{guestRsvpPct}% Confirmed • {pendingGuestsCount} Pending</p>
             </div>
             <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-              <div className="h-full bg-emerald-400 w-[82%]"></div>
+              <div className="h-full bg-emerald-400 transition-all duration-300" style={{ width: `${guestRsvpPct}%` }}></div>
             </div>
           </div>
 
@@ -495,8 +541,8 @@ export default function DashboardPage() {
               <Calendar className="w-4 h-4 text-rose-400" />
             </div>
             <div className="space-y-1">
-              <h3 className="font-serif text-2xl font-bold text-slate-100">Multi-Functions</h3>
-              <p className="text-[11px] text-rose-300">Haldi, Sangeet, Pheras & Reception</p>
+              <h3 className="font-serif text-2xl font-bold text-slate-100">{totalEventsCount} Functions</h3>
+              <p className="text-[11px] text-rose-300 capitalize">{eventTypesSummary}</p>
             </div>
             <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
               <div className="h-full bg-rose-500 w-[100%]"></div>

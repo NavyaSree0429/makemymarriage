@@ -11,7 +11,7 @@ let memoryPhotos = [];
  */
 exports.createPhoto = async (req, res) => {
   try {
-    const { weddingId } = req.params;
+    const weddingId = req.params.weddingId || req.params.id;
     const { category, imageUrl, caption, tags, isPublic } = req.body;
     const userId = req.user?._id || req.user?.id || 'dev_user_id';
     const uploaderName = req.user?.fullName || 'Wedding Host';
@@ -79,8 +79,71 @@ exports.createPhoto = async (req, res) => {
  */
 exports.getPhotos = async (req, res) => {
   try {
-    const { weddingId } = req.params;
+    const weddingId = req.params.weddingId || req.params.id;
     const { category, search } = req.query;
+
+    const defaultSeedPhotos = [
+      {
+        wedding: weddingId,
+        uploadedBy: req.user?._id || 'dev_user_1',
+        uploaderName: 'Anushka Sharma',
+        category: 'WEDDING',
+        imageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80',
+        caption: 'Sacred pheras around the holy fire under golden mandap lights 💍',
+        likesCount: 18,
+        likedBy: [],
+        tags: ['Mandap', 'Pheras', 'Vows'],
+        isPublic: true,
+      },
+      {
+        wedding: weddingId,
+        uploadedBy: req.user?._id || 'dev_user_1',
+        uploaderName: 'Virat Kohli',
+        category: 'HALDI',
+        imageUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80',
+        caption: 'Joyous turmeric laughter with family during Haldi ceremony 🌼',
+        likesCount: 24,
+        likedBy: [],
+        tags: ['Haldi', 'Family', 'Fun'],
+        isPublic: true,
+      },
+      {
+        wedding: weddingId,
+        uploadedBy: req.user?._id || 'dev_user_1',
+        uploaderName: 'Karan Johar',
+        category: 'SANGEET',
+        imageUrl: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1200&q=80',
+        caption: 'Grand musical night performance with royal chandelier backdrop 💃🎵',
+        likesCount: 31,
+        likedBy: [],
+        tags: ['Sangeet', 'Dance', 'Chandelier'],
+        isPublic: true,
+      },
+      {
+        wedding: weddingId,
+        uploadedBy: req.user?._id || 'dev_user_1',
+        uploaderName: 'Anushka Sharma',
+        category: 'MEHENDI',
+        imageUrl: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1200&q=80',
+        caption: 'Intricate royal bridal henna art with floral marigold decor 🌿',
+        likesCount: 15,
+        likedBy: [],
+        tags: ['Mehendi', 'Henna', 'Marigold'],
+        isPublic: true,
+      },
+      {
+        wedding: weddingId,
+        uploadedBy: req.user?._id || 'dev_user_1',
+        uploaderName: 'Royal Photographer',
+        category: 'RECEPTION',
+        imageUrl: 'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1200&q=80',
+        caption: 'Grand palace entry banquet reception under fireworks 🥂✨',
+        likesCount: 42,
+        likedBy: [],
+        tags: ['Reception', 'Palace', 'Banquet'],
+        isPublic: true,
+      },
+    ];
 
     if (mongoose.connection.readyState === 1) {
       const query = { wedding: weddingId };
@@ -91,7 +154,20 @@ exports.getPhotos = async (req, res) => {
         query.caption = { $regex: search, $options: 'i' };
       }
 
-      const photos = await Photo.find(query).sort({ createdAt: -1 });
+      let photos = await Photo.find(query).sort({ createdAt: -1 });
+
+      // Auto-seed default photos if DB is currently empty for this wedding
+      if (photos.length === 0 && (!category || category === 'ALL') && !search && mongoose.Types.ObjectId.isValid(weddingId)) {
+        try {
+          const dbSeed = defaultSeedPhotos.map((p) => ({
+            ...p,
+            uploadedBy: req.user?._id || new mongoose.Types.ObjectId(),
+          }));
+          photos = await Photo.insertMany(dbSeed);
+        } catch (seedErr) {
+          console.warn('DB Photo auto-seed error:', seedErr.message);
+        }
+      }
 
       return res.status(200).json({
         success: true,
@@ -103,89 +179,22 @@ exports.getPhotos = async (req, res) => {
     // Dev Memory Fallback
     let result = memoryPhotos.filter((p) => String(p.wedding) === String(weddingId));
 
+    // Pre-populate seed mock photos if memory is empty
+    if (result.length === 0 && (!category || category === 'ALL') && !search) {
+      const memSeed = defaultSeedPhotos.map((p, idx) => ({
+        _id: `photo_seed_${idx + 1}_${weddingId}`,
+        ...p,
+        createdAt: new Date(Date.now() - 3600000 * (idx + 1) * 4).toISOString(),
+      }));
+      memoryPhotos.push(...memSeed);
+      result = memSeed;
+    }
+
     if (category && category !== 'ALL') {
       result = result.filter((p) => p.category === category);
     }
     if (search) {
       result = result.filter((p) => (p.caption || '').toLowerCase().includes(search.toLowerCase()));
-    }
-
-    // Pre-populate seed mock photos if memory is empty
-    if (result.length === 0 && (!category || category === 'ALL') && !search) {
-      const seedPhotos = [
-        {
-          _id: 'photo_seed_1',
-          wedding: weddingId,
-          uploadedBy: req.user?._id || 'dev_user_1',
-          uploaderName: 'Anushka Sharma',
-          category: 'WEDDING',
-          imageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80',
-          caption: 'Sacred pheras around the holy fire under golden mandap lights 💍',
-          likesCount: 18,
-          likedBy: [],
-          tags: ['Mandap', 'Pheras', 'Vows'],
-          isPublic: true,
-          createdAt: new Date(Date.now() - 3600000 * 5).toISOString(),
-        },
-        {
-          _id: 'photo_seed_2',
-          wedding: weddingId,
-          uploadedBy: req.user?._id || 'dev_user_1',
-          uploaderName: 'Virat Kohli',
-          category: 'HALDI',
-          imageUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80',
-          caption: 'Joyous turmeric laughter with family during Haldi ceremony 🌼',
-          likesCount: 24,
-          likedBy: [],
-          tags: ['Haldi', 'Family', 'Fun'],
-          isPublic: true,
-          createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-        },
-        {
-          _id: 'photo_seed_3',
-          wedding: weddingId,
-          uploadedBy: req.user?._id || 'dev_user_1',
-          uploaderName: 'Karan Johar',
-          category: 'SANGEET',
-          imageUrl: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1200&q=80',
-          caption: 'Grand musical night performance with royal chandelier backdrop 💃🎵',
-          likesCount: 31,
-          likedBy: [],
-          tags: ['Sangeet', 'Dance', 'Chandelier'],
-          isPublic: true,
-          createdAt: new Date(Date.now() - 3600000 * 18).toISOString(),
-        },
-        {
-          _id: 'photo_seed_4',
-          wedding: weddingId,
-          uploadedBy: req.user?._id || 'dev_user_1',
-          uploaderName: 'Anushka Sharma',
-          category: 'MEHENDI',
-          imageUrl: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1200&q=80',
-          caption: 'Intricate royal bridal henna art with floral marigold decor 🌿',
-          likesCount: 15,
-          likedBy: [],
-          tags: ['Mehendi', 'Henna', 'Marigold'],
-          isPublic: true,
-          createdAt: new Date(Date.now() - 3600000 * 30).toISOString(),
-        },
-        {
-          _id: 'photo_seed_5',
-          wedding: weddingId,
-          uploadedBy: req.user?._id || 'dev_user_1',
-          uploaderName: 'Royal Photographer',
-          category: 'RECEPTION',
-          imageUrl: 'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1200&q=80',
-          caption: 'Grand palace entry banquet reception under fireworks 🥂✨',
-          likesCount: 42,
-          likedBy: [],
-          tags: ['Reception', 'Palace', 'Banquet'],
-          isPublic: true,
-          createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-        },
-      ];
-      memoryPhotos = seedPhotos;
-      result = seedPhotos;
     }
 
     return res.status(200).json({

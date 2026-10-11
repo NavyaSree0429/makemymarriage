@@ -4,10 +4,12 @@ const healthRoutes = require('./healthRoutes');
 const authRoutes = require('./authRoutes');
 const weddingRoutes = require('./weddingRoutes');
 const rsvpRoutes = require('./rsvpRoutes');
+const publicRoutes = require('./publicRoutes');
 
 router.use('/system', healthRoutes);
 router.use('/auth', authRoutes);
 router.use('/weddings', weddingRoutes);
 router.use('/rsvp', rsvpRoutes);
+router.use('/public', publicRoutes);
 
 module.exports = router;

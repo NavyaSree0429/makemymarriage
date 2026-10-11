@@ -19,6 +19,23 @@ const io = new Server(server, {
 io.on('connection', (socket) => {
   console.log(`[Socket.IO] Client connected: ${socket.id}`);
   
+  // Join wedding workspace channel
+  socket.on('join_wedding', (weddingId) => {
+    if (weddingId) {
+      socket.join(`wedding_${weddingId}`);
+      console.log(`[Socket.IO] Client ${socket.id} joined room wedding_${weddingId}`);
+      socket.emit('joined_room', { room: `wedding_${weddingId}`, status: 'CONNECTED' });
+    }
+  });
+
+  // Leave wedding workspace channel
+  socket.on('leave_wedding', (weddingId) => {
+    if (weddingId) {
+      socket.leave(`wedding_${weddingId}`);
+      console.log(`[Socket.IO] Client ${socket.id} left room wedding_${weddingId}`);
+    }
+  });
+
   socket.on('disconnect', () => {
     console.log(`[Socket.IO] Client disconnected: ${socket.id}`);
   });

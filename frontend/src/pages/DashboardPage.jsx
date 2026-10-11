@@ -25,6 +25,10 @@ import LightboxViewerModal from '../features/photos/LightboxViewerModal';
 import { createPhotoApi, getPhotosApi, deletePhotoApi, toggleLikePhotoApi } from '../services/photoService';
 import { getEventsApi } from '../services/eventService';
 import { getGuestsApi } from '../services/guestService';
+import { useNotifications } from '../context/NotificationContext';
+import NotificationCenterModal from '../features/notifications/NotificationCenterModal';
+import ToastNotification from '../features/notifications/ToastNotification';
+import LiveActivityStreamWidget from '../features/notifications/LiveActivityStreamWidget';
 
 import {
   Heart, Calendar, Users, Shield, CheckCircle, Gift, MapPin, Video,
@@ -34,6 +38,7 @@ import {
 export default function DashboardPage() {
   const { user, accessToken } = useAuth();
   const { activeWedding, myWeddings, switchWedding } = useWedding();
+  const { isNotificationOpen, setIsNotificationOpen, unreadCount } = useNotifications();
 
   const token = accessToken || localStorage.getItem('access_token');
 
@@ -416,6 +421,22 @@ export default function DashboardPage() {
 
             {weddingObj && (
               <button
+                onClick={() => setIsNotificationOpen(true)}
+                className="relative px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-semibold flex items-center space-x-1.5 transition"
+                title="Open Live Notification Hub"
+              >
+                <Bell className="w-4 h-4 text-amber-300" />
+                <span>Live Alerts</span>
+                {unreadCount > 0 && (
+                  <span className="ml-1 px-1.5 py-0.2 text-[10px] bg-rose-500 text-white rounded-full font-bold">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+            )}
+
+            {weddingObj && (
+              <button
                 onClick={() => setShowInviteModal(true)}
                 className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold flex items-center space-x-1.5 transition"
               >
@@ -657,6 +678,13 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* MOD-11 Real-Time Operations & Live Activity Stream Hub */}
+        {weddingObj && (
+          <div id="activity-stream-section">
+            <LiveActivityStreamWidget weddingId={weddingObj._id} />
+          </div>
+        )}
+
         {/* Organizers List Widget Section */}
         <div className="grid grid-cols-1 gap-8">
           <OrganizersListWidget
@@ -741,6 +769,14 @@ export default function DashboardPage() {
         onNext={() => setLightboxIndex((prev) => (prev < photosList.length - 1 ? prev + 1 : 0))}
         onToggleLike={handleToggleLikePhoto}
       />
+
+      {/* MOD-11 Real-Time Notification Center Modal & Live Toast */}
+      <NotificationCenterModal
+        isOpen={isNotificationOpen}
+        onClose={() => setIsNotificationOpen(false)}
+      />
+
+      <ToastNotification />
     </div>
   );
 }

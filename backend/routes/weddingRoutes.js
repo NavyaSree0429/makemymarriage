@@ -77,6 +77,13 @@ const {
   deletePhoto,
   toggleLikePhoto,
 } = require('../controllers/photoController');
+const {
+  getNotifications,
+  markAsRead,
+  deleteNotification,
+  clearAllNotifications,
+  sendTestNotification,
+} = require('../controllers/notificationController');
 
 // All wedding management routes are protected
 router.use(protect);
@@ -124,6 +131,13 @@ router.get('/:id/photos', getPhotos);
 router.put('/:id/photos/:photoId', validateUpdatePhoto, updatePhoto);
 router.delete('/:id/photos/:photoId', deletePhoto);
 router.post('/:id/photos/:photoId/like', toggleLikePhoto);
+
+// MOD-11 Real-Time Notifications & Reminders routes
+router.get('/:id/notifications', getNotifications);
+router.put('/:id/notifications/mark-read', markAsRead);
+router.delete('/:id/notifications/:notificationId', deleteNotification);
+router.delete('/:id/notifications', clearAllNotifications);
+router.post('/:id/notifications/test', sendTestNotification);
 
 module.exports = router;
 

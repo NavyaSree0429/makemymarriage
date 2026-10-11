@@ -1,5 +1,6 @@
 const Photo = require('../models/Photo');
 const mongoose = require('mongoose');
+const { dispatchWeddingNotification } = require('../utils/socketNotifier');
 
 // Dev Memory Fallback Storage
 let memoryPhotos = [];
@@ -29,6 +30,18 @@ exports.createPhoto = async (req, res) => {
         isPublic: isPublic !== undefined ? isPublic : true,
       });
 
+      // Dispatch live real-time notification
+      await dispatchWeddingNotification(req, {
+        weddingId,
+        title: 'New Photo Memory Uploaded 📸',
+        message: `${uploaderName} added a new photo to the "${category || 'Ceremony'}" gallery album.`,
+        category: 'PHOTO',
+        priority: 'NORMAL',
+        actionUrl: '#photos-section',
+        actionLabel: 'Open Gallery Vault',
+        metadata: { photoId: newPhoto._id, imageUrl, category },
+      });
+
       return res.status(201).json({
         success: true,
         data: newPhoto,
@@ -54,6 +67,18 @@ exports.createPhoto = async (req, res) => {
     };
 
     memoryPhotos.unshift(mockPhoto);
+
+    // Dispatch live real-time notification (Dev Memory)
+    await dispatchWeddingNotification(req, {
+      weddingId,
+      title: 'New Photo Memory Uploaded 📸',
+      message: `${uploaderName} added a new photo to the "${category || 'Ceremony'}" gallery album.`,
+      category: 'PHOTO',
+      priority: 'NORMAL',
+      actionUrl: '#photos-section',
+      actionLabel: 'Open Gallery Vault',
+      metadata: { photoId: mockPhoto._id, imageUrl, category },
+    });
 
     return res.status(201).json({
       success: true,

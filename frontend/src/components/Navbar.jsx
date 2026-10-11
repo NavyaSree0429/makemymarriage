@@ -2,11 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useWedding } from '../context/WeddingContext';
-import { Heart, Sparkles, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react';
+import { Heart, Sparkles, LogOut, LayoutDashboard, ChevronDown, Bell } from 'lucide-react';
+import { useNotifications } from '../context/NotificationContext';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { myWeddings, activeWedding, switchWedding } = useWedding();
+  const { unreadCount, socketConnected, setIsNotificationOpen } = useNotifications();
 
   return (
     <header className="sticky top-0 z-40 bg-slate-950/70 backdrop-blur-xl border-b border-slate-800/80 px-4 lg:px-8 py-3.5 transition-all">
@@ -56,6 +58,25 @@ export default function Navbar() {
                     ))}
                   </select>
                 </div>
+              )}
+
+              {/* Notification Hub Trigger */}
+              {activeWedding && (
+                <button
+                  onClick={() => setIsNotificationOpen(true)}
+                  className="relative p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center group"
+                  title="Real-Time Notification Hub"
+                >
+                  <Bell className="w-4 h-4 text-slate-300 group-hover:text-amber-300 transition-colors" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 px-1.5 py-0.2 min-w-[18px] h-[18px] text-[10px] font-bold bg-gradient-to-r from-rose-500 to-amber-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-rose-500/50 animate-pulse">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                  {socketConnected && (
+                    <span className="absolute bottom-1 right-1 w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+                  )}
+                </button>
               )}
 
               <Link

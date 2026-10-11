@@ -5,6 +5,7 @@ const Wedding = require('../models/Wedding');
 const Event = require('../models/Event');
 const WeddingMembership = require('../models/WeddingMembership');
 const { sendSuccess, sendError } = require('../utils/apiResponse');
+const { dispatchWeddingNotification } = require('../utils/socketNotifier');
 
 const isDBConnected = () => mongoose.connection && mongoose.connection.readyState === 1;
 
@@ -284,6 +285,18 @@ const submitPublicRsvp = async (req, res, next) => {
         .populate('invitedEvents')
         .populate('acceptedEvents');
 
+      // Dispatch live real-time notification
+      await dispatchWeddingNotification(req, {
+        weddingId: guest.weddingId._id || guest.weddingId,
+        title: `RSVP ${rsvpStatus === 'CONFIRMED' ? 'Confirmed! 🎉' : 'Declined ❌'}`,
+        message: `${guest.name} ${rsvpStatus === 'CONFIRMED' ? `confirmed attendance (+${attendingCount || 1} guests, ${dietaryPreference || 'Standard'} dietary)` : 'declined invitation'}.`,
+        category: 'RSVP',
+        priority: rsvpStatus === 'CONFIRMED' ? 'HIGH' : 'NORMAL',
+        actionUrl: '#guests-section',
+        actionLabel: 'View in Guest List',
+        metadata: { guestId: guest._id, guestName: guest.name, rsvpStatus, attendingCount },
+      });
+
       return sendSuccess(res, 200, 'RSVP response submitted successfully!', updatedGuest);
     } else {
       const guests = getMemoryGuests();
@@ -298,6 +311,18 @@ const submitPublicRsvp = async (req, res, next) => {
       if (acceptedEvents) guest.acceptedEvents = acceptedEvents;
       if (wishes !== undefined) guest.wishes = wishes;
       guest.updatedAt = new Date().toISOString();
+
+      // Dispatch live real-time notification (Dev Memory)
+      await dispatchWeddingNotification(req, {
+        weddingId: guest.weddingId,
+        title: `RSVP ${rsvpStatus === 'CONFIRMED' ? 'Confirmed! 🎉' : 'Declined ❌'}`,
+        message: `${guest.name} ${rsvpStatus === 'CONFIRMED' ? `confirmed attendance (+${attendingCount || 1} guests, ${dietaryPreference || 'Standard'} dietary)` : 'declined invitation'}.`,
+        category: 'RSVP',
+        priority: rsvpStatus === 'CONFIRMED' ? 'HIGH' : 'NORMAL',
+        actionUrl: '#guests-section',
+        actionLabel: 'View in Guest List',
+        metadata: { guestId: guest._id, guestName: guest.name, rsvpStatus, attendingCount },
+      });
 
       return sendSuccess(res, 200, 'RSVP response submitted successfully! (Dev Memory Mode)', guest);
     }

@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { WeddingProvider } from './context/WeddingContext';
+import { NotificationProvider } from './context/NotificationContext';
 
 import HomePage from './pages/HomePage';
 import SignInPage from './pages/SignInPage';
@@ -32,24 +33,26 @@ export default function App() {
   return (
     <AuthProvider>
       <WeddingProvider>
-        <Router>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/signin" element={<SignInPage />} />
-            <Route path="/signup" element={<SignUpPage />} />
-            <Route path="/rsvp/:token" element={<GuestRsvpPage />} />
-            <Route path="/w/:slug" element={<PublicWeddingPage />} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <DashboardPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Router>
+        <NotificationProvider>
+          <Router>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/signin" element={<SignInPage />} />
+              <Route path="/signup" element={<SignUpPage />} />
+              <Route path="/rsvp/:token" element={<GuestRsvpPage />} />
+              <Route path="/w/:slug" element={<PublicWeddingPage />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <DashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Router>
+        </NotificationProvider>
       </WeddingProvider>
     </AuthProvider>
   );

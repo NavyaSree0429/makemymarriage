@@ -58,6 +58,14 @@ const weddingSchema = new mongoose.Schema(
       enum: ['PLANNING', 'ACTIVE', 'COMPLETED', 'ARCHIVED'],
       default: 'PLANNING',
     },
+    archivedAt: {
+      type: Date,
+      default: null,
+    },
+    archivalNote: {
+      type: String,
+      default: '',
+    },
     partnerInviteCode: {
       type: String,
       default: null,

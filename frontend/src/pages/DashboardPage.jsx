@@ -29,16 +29,26 @@ import { useNotifications } from '../context/NotificationContext';
 import NotificationCenterModal from '../features/notifications/NotificationCenterModal';
 import ToastNotification from '../features/notifications/ToastNotification';
 import LiveActivityStreamWidget from '../features/notifications/LiveActivityStreamWidget';
+import PostWeddingArchiveView from '../features/archive/PostWeddingArchiveView';
 
 import {
   Heart, Calendar, Users, Shield, CheckCircle, Gift, MapPin, Video,
-  Plus, Search, Bell, Copy, Share2, Layers, AlertCircle, ArrowUpRight, Check, KeyRound, UserPlus, DollarSign, Camera, Sparkles
+  Plus, Search, Bell, Copy, Share2, Layers, AlertCircle, ArrowUpRight, Check, KeyRound, UserPlus, DollarSign, Camera, Sparkles,
+  FolderArchive, Lock, Unlock
 } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user, accessToken } = useAuth();
-  const { activeWedding, myWeddings, switchWedding } = useWedding();
+  const { activeWedding, myWeddings, switchWedding, refreshWeddings } = useWedding();
   const { isNotificationOpen, setIsNotificationOpen, unreadCount } = useNotifications();
+
+  const [activeView, setActiveView] = useState('PLANNING'); // 'PLANNING' | 'ARCHIVE'
+
+  const handleArchiveStatusChanged = async () => {
+    if (refreshWeddings) {
+      await refreshWeddings();
+    }
+  };
 
   const token = accessToken || localStorage.getItem('access_token');
 
@@ -437,6 +447,26 @@ export default function DashboardPage() {
 
             {weddingObj && (
               <button
+                onClick={() => setActiveView(activeView === 'ARCHIVE' ? 'PLANNING' : 'ARCHIVE')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition ${
+                  activeView === 'ARCHIVE' || weddingObj.status === 'ARCHIVED'
+                    ? 'bg-gradient-to-r from-[#B76E79] to-[#9A5560] text-white border border-[#F3E5AB]/40 shadow-lg'
+                    : 'bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-300'
+                }`}
+                title="Open Eternal Nuptial Archive & Memory Vault"
+              >
+                <FolderArchive className="w-4 h-4 text-[#F3E5AB]" />
+                <span>{activeView === 'ARCHIVE' ? 'Back to Planning' : 'Eternal Memory Vault'}</span>
+                {weddingObj.status === 'ARCHIVED' && (
+                  <span className="ml-1 px-1.5 py-0.2 text-[9px] bg-rose-500 text-white rounded font-bold uppercase">
+                    Sealed
+                  </span>
+                )}
+              </button>
+            )}
+
+            {weddingObj && (
+              <button
                 onClick={() => setShowInviteModal(true)}
                 className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold flex items-center space-x-1.5 transition"
               >
@@ -455,8 +485,44 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Wedding Overview Top Banner */}
-        {!weddingObj ? (
+        {/* MOD-12 Workspace Archival Read-Only Alert Banner */}
+        {weddingObj?.status === 'ARCHIVED' && activeView === 'PLANNING' && (
+          <div className="bg-[#111827]/90 border border-[#F3E5AB]/40 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xl">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-[#F3E5AB]/40 flex items-center justify-center text-[#F3E5AB]">
+                <Lock className="w-4 h-4 text-amber-300" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-white">
+                  🏛️ Workspace is Sealed in Eternal Archive Mode (Read-Only)
+                </p>
+                <p className="text-[11px] text-slate-400">
+                  All ceremonies, guest RSVPs, and budgets are frozen for lifelong preservation.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setActiveView('ARCHIVE')}
+              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#B76E79] to-[#9A5560] text-white text-xs font-semibold flex items-center space-x-1.5 transition"
+            >
+              <FolderArchive className="w-3.5 h-3.5 text-[#F3E5AB]" />
+              <span>Open Memory Vault</span>
+            </button>
+          </div>
+        )}
+
+        {/* MOD-12 Conditional View: Eternal Memory Vault or Active Planning */}
+        {activeView === 'ARCHIVE' && weddingObj ? (
+          <PostWeddingArchiveView
+            weddingId={weddingObj._id}
+            token={token}
+            weddingObj={weddingObj}
+            onStatusChange={handleArchiveStatusChanged}
+          />
+        ) : (
+          <>
+            {/* Wedding Overview Top Banner */}
+            {!weddingObj ? (
           <div className="bg-slate-900/60 backdrop-blur-2xl border border-dashed border-rose-500/30 rounded-3xl p-10 text-center space-y-4">
             <div className="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 flex items-center justify-center mx-auto text-2xl font-bold">
               💍
@@ -694,6 +760,8 @@ export default function DashboardPage() {
             refreshTrigger={organizerRefreshKey}
           />
         </div>
+          </>
+        )}
       </main>
 
       {/* Modals */}

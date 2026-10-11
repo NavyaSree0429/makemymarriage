@@ -17,40 +17,42 @@ export function WeddingProvider({ children }) {
   const [error, setError] = useState(null);
 
   // Load user weddings when authenticated
-  useEffect(() => {
-    async function fetchWeddings() {
-      if (!accessToken || !user) {
-        setMyWeddings([]);
+  const fetchWeddings = async () => {
+    if (!accessToken || !user) {
+      setMyWeddings([]);
+      setActiveWedding(null);
+      localStorage.removeItem('activeWeddingId');
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await getMyWeddingsApi(accessToken);
+      const list = res.data || [];
+      setMyWeddings(list);
+      if (list.length > 0) {
+        const savedId = localStorage.getItem('activeWeddingId');
+        const found = list.find((item) => String(item.wedding?._id) === String(savedId));
+        if (found) {
+          setActiveWedding(found);
+        } else {
+          setActiveWedding(list[0]);
+          if (list[0].wedding?._id) {
+            localStorage.setItem('activeWeddingId', list[0].wedding._id);
+          }
+        }
+      } else {
         setActiveWedding(null);
         localStorage.removeItem('activeWeddingId');
-        return;
       }
-      setLoading(true);
-      try {
-        const res = await getMyWeddingsApi(accessToken);
-        const list = res.data || [];
-        setMyWeddings(list);
-        if (list.length > 0) {
-          const savedId = localStorage.getItem('activeWeddingId');
-          const found = list.find((item) => String(item.wedding?._id) === String(savedId));
-          if (found) {
-            setActiveWedding(found);
-          } else {
-            setActiveWedding(list[0]);
-            if (list[0].wedding?._id) {
-              localStorage.setItem('activeWeddingId', list[0].wedding._id);
-            }
-          }
-        } else {
-          setActiveWedding(null);
-          localStorage.removeItem('activeWeddingId');
-        }
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  // Load user weddings when authenticated
+  useEffect(() => {
     fetchWeddings();
   }, [accessToken, user]);
 
@@ -128,6 +130,7 @@ export function WeddingProvider({ children }) {
         invitePartner,
         acceptPartnerInvite,
         switchWedding,
+        refreshWeddings: fetchWeddings,
       }}
     >
       {children}

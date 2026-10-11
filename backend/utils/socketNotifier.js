@@ -9,17 +9,32 @@ if (!global.memoryNotifications) {
 /**
  * Dispatches a real-time event to the wedding workspace room and creates a notification record
  */
-async function dispatchWeddingNotification(req, {
-  weddingId,
-  title,
-  message,
-  category = 'SYSTEM',
-  priority = 'NORMAL',
-  actionUrl = '',
-  actionLabel = '',
-  metadata = {}
-}) {
+async function dispatchWeddingNotification(reqOrOpts, maybeOpts) {
   try {
+    let req = null;
+    let options = {};
+
+    if (maybeOpts && typeof maybeOpts === 'object') {
+      req = reqOrOpts;
+      options = maybeOpts;
+    } else if (reqOrOpts && typeof reqOrOpts === 'object') {
+      if (reqOrOpts.app || reqOrOpts.headers) {
+        req = reqOrOpts;
+      } else {
+        options = reqOrOpts;
+      }
+    }
+
+    const {
+      weddingId,
+      title,
+      message,
+      category = 'SYSTEM',
+      priority = 'NORMAL',
+      actionUrl = '',
+      actionLabel = '',
+      metadata = {},
+    } = options;
     let savedNotification = null;
 
     if (mongoose.connection.readyState === 1 && mongoose.Types.ObjectId.isValid(weddingId)) {

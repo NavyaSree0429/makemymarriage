@@ -139,5 +139,16 @@ router.delete('/:id/notifications/:notificationId', deleteNotification);
 router.delete('/:id/notifications', clearAllNotifications);
 router.post('/:id/notifications/test', sendTestNotification);
 
+// MOD-12 Wedding Archiving, Retrospective & Data Export routes
+const {
+  getArchiveRetrospective,
+  toggleArchiveStatus,
+  exportData,
+} = require('../controllers/archiveController');
+
+router.get('/:id/archive', getArchiveRetrospective);
+router.put('/:id/archive', toggleArchiveStatus);
+router.get('/:id/export/:type', exportData);
+
 module.exports = router;
 

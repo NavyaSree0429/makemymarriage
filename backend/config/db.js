@@ -16,9 +16,12 @@ class MemoryDB {
 global.memoryDB = global.memoryDB || new MemoryDB();
 
 const connectDB = async () => {
+  if (mongoose.connection.readyState >= 1) {
+    return mongoose.connection;
+  }
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 1500,
+      serverSelectionTimeoutMS: 5000,
     });
     console.log(`[MongoDB] Connected: ${conn.connection.host}`);
     return conn;

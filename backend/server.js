@@ -44,9 +44,14 @@ io.on('connection', (socket) => {
 // Attach Socket.IO instance to app for routes/controllers access
 app.set('io', io);
 
-// Start server immediately
-server.listen(PORT, () => {
-  console.log(`[MakeMyMarriage API] Server listening on port ${PORT} (${process.env.NODE_ENV || 'development'} mode)`);
-  // Connect to DB asynchronously
+// Start server immediately if not serverless
+if (!process.env.VERCEL) {
+  server.listen(PORT, () => {
+    console.log(`[MakeMyMarriage API] Server listening on port ${PORT} (${process.env.NODE_ENV || 'development'} mode)`);
+    connectDB();
+  });
+} else {
   connectDB();
-});
+}
+
+module.exports = app;
